@@ -1,0 +1,17 @@
+{
+    "name": "Unhook-Reddit",
+    "description": "Remove distracting elements from Reddit",
+    "version": "1.0",
+    "manifest_version": 3,
+    "permissions":["storage", "activeTab"],
+    "options_page": "options.html",
+    "content_scripts": [
+      {
+        "matches": ["*://www.reddit.com/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "action": {
+      "default_popup": "options.html"
+    }
+  }
