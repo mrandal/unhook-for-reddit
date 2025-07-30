@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://codeforces.com/profile/mrandal"
+      }
+    },
+    "condition": {
+      "urlFilter": "||instagram.com",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://codeforces.com/profile/mrandal"
+      }
+    },
+    "condition": {
+      "urlFilter": "||x.com",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://codeforces.com/profile/mrandal"
+      }
+    },
+    "condition": {
+      "urlFilter": "||twitter.com",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://codeforces.com/profile/mrandal"
+      }
+    },
+    "condition": {
+      "urlFilter": "||twitter.com",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  }
+]

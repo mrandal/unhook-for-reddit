@@ -6,8 +6,24 @@ const hideRecentPosts = document.getElementById("hideRecentPosts");
 const hideTrending = document.getElementById("hideTrending");
 const saveButton = document.getElementById("save");
 
+// document.addEventListener("DOMContentLoaded", () => {
+//     browser.storage.sync.get(["hideHomeFeed", "hideSubredditFeed", "hideSideBar", "hideComments", "hideRecentPosts", "hideTrending"], (data) => {
+//         hideHomeFeed.checked = data.hideHomeFeed || false;
+//         hideSubredditFeed.checked = data.hideSubredditFeed || false;
+//         hideSideBar.checked = data.hideSideBar || false;
+//         hideComments.checked = data.hideComments || false;
+//         hideRecentPosts.checked = data.hideRecentPosts || false;
+//         hideTrending.checked = data.hideTrending || false;
+//     });
+// });
+
 document.addEventListener("DOMContentLoaded", () => {
-    chrome.storage.sync.get(["hideHomeFeed", "hideSubredditFeed", "hideSideBar", "hideComments", "hideRecentPosts", "hideTrending"], (data) => {
+    chrome.storage.sync.get([
+        "hideHomeFeed", "hideSubredditFeed", "hideSideBar",
+        "hideComments", "hideRecentPosts", "hideTrending"
+    ], (data) => {
+        data = data || {};  // ✅ Fix: ensure data is at least an empty object
+
         hideHomeFeed.checked = data.hideHomeFeed || false;
         hideSubredditFeed.checked = data.hideSubredditFeed || false;
         hideSideBar.checked = data.hideSideBar || false;
@@ -18,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 saveButton.addEventListener("click", () => {
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
         hideHomeFeed: hideHomeFeed.checked,
         hideSubredditFeed: hideSubredditFeed.checked,
         hideSideBar: hideSideBar.checked,

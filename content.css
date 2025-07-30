@@ -1,0 +1,7 @@
+shreddit-feed,
+#left-sidebar,
+#right-sidebar-container,
+recent-posts,
+#reddit-trending-searches-partial-container {
+  display: none !important;
+}

@@ -1,17 +1,54 @@
 {
-    "name": "Unhook-Reddit",
-    "description": "Remove distracting elements from Reddit",
-    "version": "1.0",
-    "manifest_version": 3,
-    "permissions":["storage", "activeTab"],
-    "options_page": "options.html",
-    "content_scripts": [
+  "name": "Unhook-Reddit",
+  "description": "Remove distracting elements from Reddit",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "activeTab",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "*://instagram.com/*",
+    "*://*.instagram.com/*",
+    "*://linkedin.com/*",
+    "*://*.linkedin.com/*",
+    "*://x.com/*",
+    "*://*.x.com/*",
+    "*://twitter.com/*",
+    "*://*.twitter.com/*"
+  ],
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.reddit.com/*"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "options.html"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
       {
-        "matches": ["*://www.reddit.com/*"],
-        "js": ["content.js"]
+        "id": "block-rules",
+        "enabled": true,
+        "path": "rules.json"
       }
-    ],
-    "action": {
-      "default_popup": "options.html"
+    ]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "unhook-reddit@example.com"
     }
   }
+}

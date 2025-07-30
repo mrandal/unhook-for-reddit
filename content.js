@@ -1,17 +1,17 @@
 const applyVisibilitySettings = () => {
-    chrome.storage.sync.get(["hideHomeFeed", "hideSubredditFeed", "hideSideBar", "hideComments", "hideRecentPosts"], (data) => {
+    browser.storage.sync.get(["hideHomeFeed", "hideSubredditFeed", "hideSideBar", "hideComments", "hideRecentPosts"], (data) => {
         const isSubredditPage = window.location.pathname.startsWith('/r');
 
-        if (!isSubredditPage && data.hideHomeFeed) {
+        if (!isSubredditPage && (data.hideHomeFeed || true)) {
             const feed = document.querySelectorAll("shreddit-feed");
-            feed.forEach(post =>{
+            feed.forEach(post => {
                 post.style.display = "none";
             });
         }
 
-        if (isSubredditPage && data.hideSubredditFeed) {
+        if (isSubredditPage && (data.hideSubredditFeed || true)) {
             const feed = document.querySelectorAll("shreddit-feed");
-            feed.forEach(post =>{
+            feed.forEach(post => {
                 post.style.display = "none";
             });
         }
@@ -22,22 +22,22 @@ const applyVisibilitySettings = () => {
                 comment.style.display = "none";
             });
         }
-    
-        if (data.hideSideBar) {
+
+        if (data.hideSideBar || true) {
             const lsideBar = document.getElementById("left-sidebar");
             const rsideBar = document.getElementById("right-sidebar-container");
             lsideBar.style.display = "none";
             rsideBar.style.display = "none";
         }
-    
-        if (data.hideRecentPosts) {
+
+        if (data.hideRecentPosts || true) {
             const recentPosts = document.querySelectorAll("recent-posts");
             recentPosts.forEach(recentPost => {
                 recentPost.style.display = "none";
             });
         }
 
-        if (data.hideTrending) {
+        if (data.hideTrending || true) {
             const trending = document.getElementById("reddit-trending-searches-partial-container");
             trending.style.display = "none";
         }
