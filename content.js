@@ -503,31 +503,54 @@ try {
     let currentUrl = window.location.href;
     let isNavigating = false;
 
-    const handleNavigationStart = () => {
+    const handleNavigationStart = (destinationUrl = null) => {
         if (!isNavigating) {
             console.log('Navigation starting, reinforcing hiding...');
             isNavigating = true;
 
-            // Immediately re-hide elements that should be hidden to prevent flash
+            // Immediately apply settings based on DESTINATION page to prevent flash
             if (currentSettings && Object.keys(currentSettings).length > 0) {
-                const isSubredditPage = window.location.pathname.startsWith('/r');
+                let isDestinationSubreddit;
 
-                // Force hide elements that should be hidden during navigation
-                if (!isSubredditPage && currentSettings.hideHomeFeed) {
-                    const homeFeedElements = findElements(SELECTORS.homeFeed);
-                    homeFeedElements.forEach(el => {
+                if (destinationUrl) {
+                    // Use destination URL to determine page type
+                    try {
+                        const url = new URL(destinationUrl, window.location.origin);
+                        isDestinationSubreddit = url.pathname.startsWith('/r/');
+                    } catch (e) {
+                        // If URL parsing fails, fall back to current URL
+                        isDestinationSubreddit = window.location.pathname.startsWith('/r');
+                    }
+                } else {
+                    // Fallback to current URL (for back/forward navigation)
+                    isDestinationSubreddit = window.location.pathname.startsWith('/r');
+                }
+
+                console.log('Destination is subreddit page:', isDestinationSubreddit);
+
+                // Apply settings based on DESTINATION page context
+                const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
+
+                if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
+                    // Going to home page and home feed should be hidden
+                    feedElements.forEach(el => {
                         el.style.setProperty('display', 'none', 'important');
                         el.style.setProperty('visibility', 'hidden', 'important');
                         el.style.setProperty('opacity', '0', 'important');
                     });
-                }
-
-                if (isSubredditPage && currentSettings.hideSubredditFeed) {
-                    const subredditFeedElements = findElements(SELECTORS.subredditFeed);
-                    subredditFeedElements.forEach(el => {
+                } else if (isDestinationSubreddit && currentSettings.hideSubredditFeed) {
+                    // Going to subreddit page and subreddit feed should be hidden
+                    feedElements.forEach(el => {
                         el.style.setProperty('display', 'none', 'important');
                         el.style.setProperty('visibility', 'hidden', 'important');
                         el.style.setProperty('opacity', '0', 'important');
+                    });
+                } else {
+                    // Feed should be visible on destination page - ensure it's not hidden
+                    feedElements.forEach(el => {
+                        el.style.removeProperty('display');
+                        el.style.removeProperty('visibility');
+                        el.style.removeProperty('opacity');
                     });
                 }
             }
@@ -554,7 +577,7 @@ try {
         const target = event.target.closest('a[href]');
         if (target && target.href && target.href.includes('reddit.com')) {
             console.log('Link click detected, preparing for navigation...');
-            handleNavigationStart();
+            handleNavigationStart(target.href); // Pass destination URL
         }
     }, true); // Use capture phase to catch early
 
@@ -564,7 +587,7 @@ try {
 
     // Also listen for popstate (back/forward navigation)
     window.addEventListener('popstate', (event) => {
-        handleNavigationStart();
+        handleNavigationStart(); // No destination URL available for back/forward
         setTimeout(handleNavigation, 10);
     });
 
@@ -572,14 +595,14 @@ try {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    history.pushState = function () {
-        handleNavigationStart();
+    history.pushState = function (state, title, url) {
+        handleNavigationStart(url); // Pass destination URL
         originalPushState.apply(history, arguments);
         setTimeout(handleNavigation, 10);
     };
 
-    history.replaceState = function () {
-        handleNavigationStart();
+    history.replaceState = function (state, title, url) {
+        handleNavigationStart(url); // Pass destination URL
         originalReplaceState.apply(history, arguments);
         setTimeout(handleNavigation, 10);
     };
@@ -629,11 +652,11 @@ try {
     }
 
     // Also reapply on clicks and other events that might trigger dynamic content
-    document.addEventListener('click', () => {
-        setTimeout(() => {
-            applyVisibilitySettings();
-        }, 100);
-    });
+    // document.addEventListener('click', () => {
+    //     setTimeout(() => {
+    //         applyVisibilitySettings();
+    //     }, 100);
+    // });
 
     // Enhanced search input detection with multiple event types
     const handleSearchInteraction = (event) => {
@@ -657,7 +680,7 @@ try {
 
         if (isSearchInput) {
             // Apply trending hiding immediately and with delays
-            [0, 50, 100, 200, 500, 1000].forEach(delay => {
+            [0, 50].forEach(delay => {
                 setTimeout(() => {
                     if (currentSettings.hideTrending === true) {
                         // Find and hide trending elements
@@ -693,9 +716,9 @@ try {
 
     // Listen for multiple event types on search inputs
     document.addEventListener('focusin', handleSearchInteraction, true);
-    document.addEventListener('focus', handleSearchInteraction, true);
-    document.addEventListener('click', handleSearchInteraction, true);
-    document.addEventListener('input', handleSearchInteraction, true);
+    // document.addEventListener('focus', handleSearchInteraction, true);
+    // document.addEventListener('click', handleSearchInteraction, true);
+    // document.addEventListener('input', handleSearchInteraction, true);
 
     // Enhanced mutation observer to catch dynamically created search dropdowns (including Shadow DOM)
     const searchObserver = new MutationObserver((mutations) => {
@@ -739,34 +762,6 @@ try {
 
     // Set up shadow root observation with delay to catch dynamically created ones
     setTimeout(observeExistingShadowRoots, 100);
-    setTimeout(observeExistingShadowRoots, 500);
-    setTimeout(observeExistingShadowRoots, 1000);
-
-    // Add manual test functions to global scope for debugging
-    window.testTrending = testTrendingContainer;
-
-    // Shadow DOM test function
-    window.testShadowDOM = () => {
-        console.log('=== TESTING SHADOW DOM SEARCH ===');
-
-        // Count shadow roots
-        const elementsWithShadow = document.querySelectorAll('*');
-        const shadowRoots = Array.from(elementsWithShadow).filter(el => el.shadowRoot);
-        console.log('Found', shadowRoots.length, 'elements with shadow DOM');
-
-        // Test trending search with Shadow DOM
-        const trendingElements = findElements('#reddit-trending-searches-partial-container, faceplate-tracker[data-testid="reddit-trending-result"]');
-        console.log('Found', trendingElements.length, 'trending elements (including Shadow DOM)');
-
-        trendingElements.forEach((element, index) => {
-            console.log(`Trending element ${index + 1}:`, element);
-            console.log('  - In shadow DOM:', !document.contains(element));
-            console.log('  - ID:', element.id);
-            console.log('  - Data-testid:', element.getAttribute('data-testid'));
-        });
-
-        return { shadowRoots: shadowRoots.length, trendingElements: trendingElements.length };
-    };
 
     // Function to scan for common Reddit elements
     const scanForRedditElements = () => {
@@ -798,141 +793,8 @@ try {
         console.log('=== END SCAN ===');
     };
 
-    // Add to global scope for debugging
-    window.scanReddit = scanForRedditElements;
 
-    // Add manual trending search test function
-    window.testTrendingSearch = () => {
-        console.log('=== MANUAL TRENDING SEARCH TEST ===');
-        console.log('Current hideTrending setting:', currentSettings.hideTrending);
 
-        // Try all possible trending/search selectors
-        const selectors = [
-            '#reddit-trending-searches-partial-container',
-            '[data-testid="trending-searches"]',
-            '[data-testid="search-dropdown"]',
-            '.trending-searches',
-            '.search-dropdown',
-            '[data-testid="search-results"]',
-            '[role="menu"]',
-            '[role="listbox"]',
-            '[data-testid*="trending"]',
-            '[data-testid*="search"]',
-            '.search-results',
-            '[aria-label*="trending"]',
-            '[aria-label*="search"]',
-            'ul[role="menu"]',
-            'ul[role="listbox"]',
-            'div[role="menu"]',
-            'div[role="listbox"]'
-        ];
-
-        selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            console.log(`Selector "${selector}": ${elements.length} elements found`);
-            if (elements.length > 0) {
-                elements.forEach((el, i) => {
-                    console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
-                    console.log(`  Display:`, window.getComputedStyle(el).display);
-                    console.log(`  Has visible class:`, el.classList.contains('unhook-reddit-visible'));
-                    console.log(`  Inner text preview:`, el.innerText?.substring(0, 100));
-                });
-            }
-        });
-
-        // Also look for elements that appear when search is focused
-        console.log('Looking for search input elements...');
-        const searchInputs = document.querySelectorAll('input[type="search"], input[placeholder*="search"], input[aria-label*="search"]');
-        console.log('Search inputs found:', searchInputs.length);
-
-        if (searchInputs.length > 0) {
-            console.log('Focusing first search input to trigger dropdown...');
-            searchInputs[0].focus();
-
-            setTimeout(() => {
-                console.log('Re-checking for trending elements after focus...');
-                selectors.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    if (elements.length > 0) {
-                        console.log(`After focus - Selector "${selector}": ${elements.length} elements found`);
-                    }
-                });
-            }, 500);
-        }
-
-        console.log('=== END MANUAL TRENDING TEST ===');
-    };
-
-    // Add manual left sidebar test function
-    window.testLeftSidebar = () => {
-        console.log('=== MANUAL LEFT SIDEBAR TEST ===');
-        console.log('Current hideSideBar setting:', currentSettings.hideSideBar);
-
-        // Try all possible left sidebar selectors
-        const selectors = [
-            '#left-sidebar',
-            '[data-testid="left-sidebar"]',
-            '[data-testid="sidebar"]',
-            '.left-sidebar',
-            '.sidebar',
-            '[data-testid="navigation"]',
-            '[data-testid="community-list"]',
-            'nav',
-            '[role="navigation"]'
-        ];
-
-        selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            console.log(`Selector "${selector}": ${elements.length} elements found`);
-            if (elements.length > 0) {
-                elements.forEach((el, i) => {
-                    console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
-                    console.log(`  Display:`, window.getComputedStyle(el).display);
-                    console.log(`  Has visible class:`, el.classList.contains('unhook-reddit-visible'));
-                });
-            }
-        });
-
-        // Try to manually show all potential left sidebar elements
-        console.log('Attempting to show all potential left sidebar elements...');
-        selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                showElement(el);
-            });
-        });
-
-        console.log('=== END MANUAL TEST ===');
-    };
-
-    // Add manual toggle test function
-    window.testToggle = () => {
-        console.log('=== MANUAL TOGGLE TEST ===');
-        console.log('Current settings:', currentSettings);
-        console.log('Manually applying visibility settings...');
-        applyVisibilitySettings();
-        console.log('=== END TOGGLE TEST ===');
-    };
-
-    // Add storage listener test
-    window.testStorageListener = () => {
-        console.log('=== TESTING STORAGE LISTENER ===');
-        console.log('Current settings before test:', currentSettings);
-
-        // Simulate a storage change
-        const testChange = {
-            hideSideBar: { oldValue: currentSettings.hideSideBar, newValue: !currentSettings.hideSideBar }
-        };
-
-        console.log('Simulating storage change:', testChange);
-
-        // Manually trigger the storage change handler
-        currentSettings.hideSideBar = testChange.hideSideBar.newValue;
-        console.log('Updated settings:', currentSettings);
-        applyVisibilitySettings();
-
-        console.log('=== END STORAGE LISTENER TEST ===');
-    };
 
 } catch (error) {
     console.error('Content script error:', error);
