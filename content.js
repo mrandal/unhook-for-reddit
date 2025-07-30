@@ -1,10 +1,4 @@
-console.log('=== CONTENT SCRIPT STARTING ===');
-console.log('Script file loaded successfully');
-console.log('Current URL:', window.location.href);
-console.log('Document ready state:', document.readyState);
-console.log('User agent:', navigator.userAgent);
 try {
-    console.log('=== CONTENT SCRIPT LOADED ===');
 
     // Ensure browser API is available
     if (typeof browser === "undefined") {
@@ -26,7 +20,7 @@ try {
         subredditFeed: "shreddit-feed, [data-testid='feed'], [data-testid='subreddit-feed'], .feed, .subreddit-feed, [data-testid='post-container'], [data-testid='post']",
         comments: "shreddit-comment, [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
         recentPosts: "recent-posts, [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
-        trending: "#reddit-trending-searches-partial-container, [data-testid='trending-searches'], [data-testid='search-dropdown'], .trending-searches, .search-dropdown, [data-testid='search-results'], [role='menu'], [role='listbox']",
+        trending: "#reddit-trending-searches-partial-container, faceplate-tracker[data-testid='reddit-trending-result']",
         leftSidebar: "#left-sidebar, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
         rightSidebar: "#right-sidebar-container, [data-testid='right-sidebar'], [data-testid='sidebar'], .right-sidebar, .sidebar, [data-testid='community-info'], [data-testid='about-community']"
     };
@@ -65,7 +59,7 @@ try {
             }
 
             originalDisplayValues.set(element, originalDisplay);
-            console.log('Stored original display for element:', originalDisplay, 'tag:', element.tagName);
+
         }
     };
 
@@ -89,7 +83,7 @@ try {
         element.style.setProperty('visibility', 'hidden', 'important');
         element.style.setProperty('opacity', '0', 'important');
 
-        console.log('Hidden element using CSS override - final computed display:', window.getComputedStyle(element).display);
+
     };
 
     // Helper function to show element (works with CSS !important)
@@ -123,23 +117,22 @@ try {
         // Add a small delay to check if it worked
         setTimeout(() => {
             const computedDisplay = window.getComputedStyle(element).display;
-            console.log('Shown element - original:', originalDisplay, 'set:', displayValue, 'computed:', computedDisplay, 'element:', element.tagName, element.className);
-
             // If it's still hidden, try even more aggressive approach
             if (computedDisplay === 'none') {
-                console.log('Element still hidden, trying more aggressive approach...');
                 element.style.cssText += `display: ${displayValue} !important; visibility: visible !important; opacity: 1 !important;`;
             }
         }, 10);
     };
 
-
+    const testContainer = document.getElementById('reddit-trending-searches-partial-container');
+    console.log('Test container query:', testContainer);
 
     // Function to manually test trending container detection
     const testTrendingContainer = () => {
         console.log('=== MANUAL TRENDING CONTAINER TEST ===');
         const container = document.querySelector('#reddit-trending-searches-partial-container');
         console.log('Direct container query:', container);
+
 
         if (container) {
             console.log('Container found!');
@@ -158,7 +151,7 @@ try {
 
     // Debug function to test all selectors
     const testSelectors = () => {
-        console.log('=== TESTING ALL SELECTORS ===');
+
         Object.entries(SELECTORS).forEach(([name, selectorString]) => {
             const selectors = selectorString.split(', ').map(s => s.trim());
             let totalElements = 0;
@@ -169,52 +162,22 @@ try {
                 if (elements.length > 0) {
                     totalElements = elements.length;
                     foundSelector = selector;
-                    console.log(`${name} (${selector}): ${elements.length} elements found`);
-                    console.log('First element:', elements[0]);
                     break;
                 }
             }
 
-            if (totalElements === 0) {
-                console.log(`${name}: 0 elements found (tried: ${selectors.join(', ')})`);
-            }
+
         });
 
-        // Additional trending selectors to test
-        console.log('=== ADDITIONAL TRENDING TESTS ===');
-        const additionalTrendingSelectors = [
-            '#reddit-trending-searches-partial-container',
-            '[data-testid="reddit-trending-result"]',
-            '[data-type="search-dropdown-item"]',
-            'faceplate-tracker[data-testid="reddit-trending-result"]',
-            '[data-faceplate-tracking-context*="trending"]',
-            '.search-dropdown-item',
-            '[data-testid*="trending"]',
-            '[data-testid*="search"]',
-            '[role="menu"]',
-            '[role="listbox"]'
-        ];
 
-        additionalTrendingSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            console.log(`Additional trending test (${selector}): ${elements.length} elements found`);
-            if (elements.length > 0) {
-                console.log('First element:', elements[0]);
-            }
-        });
-        console.log('=== END SELECTOR TEST ===');
     };
 
     // Function to apply visibility settings
     const applyVisibilitySettings = () => {
-        console.log('=== applyVisibilitySettings START ===');
         const isSubredditPage = window.location.pathname.startsWith('/r');
-        console.log('applyVisibilitySettings called with settings:', currentSettings);
-        console.log('Is subreddit page:', isSubredditPage);
 
         // Safety check - if currentSettings is empty or undefined, show all elements
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
-            console.log('No settings loaded, showing all elements by default');
 
             // Show all elements when no settings are loaded
             Object.values(SELECTORS).forEach(selectorString => {
@@ -224,41 +187,54 @@ try {
             return;
         }
 
-        console.log('Settings loaded, applying visibility based on user preferences');
 
-        // Helper function to find elements using multiple selectors
+
+        // Helper function to find elements using multiple selectors, including Shadow DOM
         const findElements = (selectorString) => {
             const selectors = selectorString.split(', ').map(s => s.trim());
             let elements = [];
 
+            // Function to search within a root (document or shadow root)
+            const searchInRoot = (root, selector) => {
+                try {
+                    return Array.from(root.querySelectorAll(selector));
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            // Function to recursively search through shadow DOMs
+            const searchWithShadowDOM = (root, selector) => {
+                let found = [];
+
+                // Search in current root
+                found = found.concat(searchInRoot(root, selector));
+
+                // Search in all shadow roots
+                const elementsWithShadow = root.querySelectorAll('*');
+                elementsWithShadow.forEach(element => {
+                    if (element.shadowRoot) {
+                        found = found.concat(searchWithShadowDOM(element.shadowRoot, selector));
+                    }
+                });
+
+                return found;
+            };
+
+            // Try each selector
             for (const selector of selectors) {
-                const found = document.querySelectorAll(selector);
-                if (found.length > 0) {
-                    elements = Array.from(found);
-                    console.log(`Found ${elements.length} elements using selector: ${selector}`);
+                // First try normal document search
+                const normalFound = searchInRoot(document, selector);
+                if (normalFound.length > 0) {
+                    elements = normalFound;
                     break;
                 }
-            }
 
-            // If no elements found, try to find hidden elements
-            if (elements.length === 0) {
-                console.log('No elements found with standard selectors, checking for hidden elements...');
-                for (const selector of selectors) {
-                    // Try to find elements that might be hidden by CSS
-                    const allElements = document.querySelectorAll('*');
-                    const matchingElements = Array.from(allElements).filter(el => {
-                        try {
-                            return el.matches(selector);
-                        } catch (e) {
-                            return false;
-                        }
-                    });
-
-                    if (matchingElements.length > 0) {
-                        elements = matchingElements;
-                        console.log(`Found ${elements.length} hidden elements using selector: ${selector}`);
-                        break;
-                    }
+                // If not found, search through shadow DOMs
+                const shadowFound = searchWithShadowDOM(document, selector);
+                if (shadowFound.length > 0) {
+                    elements = shadowFound;
+                    break;
                 }
             }
 
@@ -376,49 +352,25 @@ try {
         });
         console.log('Recent posts elements:', recentPostElements.length, 'hidden:', currentSettings.hideRecentPosts === true);
 
-        // Handle trending container with more specific selectors
+        // Handle trending container
         const trendingElements = findElements(SELECTORS.trending);
-        if (trendingElements.length > 0) {
-            trendingElements.forEach(element => {
-                if (currentSettings.hideTrending === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-            console.log('Trending container found and hidden:', currentSettings.hideTrending === true);
-        } else {
-            console.log('Trending container not found');
-        }
-
-        // Additional check for elements that might be hidden by CSS
-        if (Object.values(currentSettings).some(setting => setting === true)) {
-            console.log('Checking for elements hidden by CSS...');
-            const allElements = document.querySelectorAll('*');
-            const potentiallyHiddenElements = Array.from(allElements).filter(el => {
-                const style = window.getComputedStyle(el);
-                return style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0';
-            });
-
-            if (potentiallyHiddenElements.length > 0) {
-                console.log(`Found ${potentiallyHiddenElements.length} potentially hidden elements`);
-                // Log some examples for debugging
-                potentiallyHiddenElements.slice(0, 5).forEach((el, index) => {
-                    console.log(`Hidden element ${index}:`, el.tagName, el.id, el.className);
-                });
+        trendingElements.forEach(element => {
+            if (currentSettings.hideTrending === true) {
+                hideElement(element);
+            } else {
+                showElement(element);
             }
-        }
+        });
+
+
     };
 
     // Function to load settings synchronously and apply immediately
     const loadAndApplyImmediateSettings = () => {
-        console.log('Loading settings for immediate application');
 
         // Try to get settings synchronously if possible
         try {
             browser.storage.sync.get(STORAGE_KEYS).then((data) => {
-                console.log('Immediate settings loaded:', data);
-
                 // Initialize settings properly - ensure they're boolean values
                 currentSettings = {
                     hideHomeFeed: data.hideHomeFeed === true,
@@ -430,10 +382,8 @@ try {
                 };
 
                 // Apply settings immediately after loading
-                console.log('Applying settings immediately after load with normalized values:', currentSettings);
                 applyVisibilitySettings();
             }).catch((error) => {
-                console.log('Error loading immediate settings:', error);
                 // Fall back to default settings (all visible)
                 currentSettings = {
                     hideHomeFeed: false,
@@ -443,11 +393,9 @@ try {
                     hideRecentPosts: false,
                     hideTrending: false
                 };
-                console.log('Using fallback settings (all visible)');
                 applyVisibilitySettings();
             });
         } catch (error) {
-            console.log('Sync storage not available, using defaults');
             currentSettings = {
                 hideHomeFeed: false,
                 hideSubredditFeed: false,
@@ -462,18 +410,8 @@ try {
 
     // Main function to load and apply settings
     const loadAndApplySettings = () => {
-        console.log('loadAndApplySettings called');
         browser.storage.sync.get(STORAGE_KEYS, (data) => {
-            console.log('Raw storage data:', data);
-            console.log('STORAGE_KEYS:', STORAGE_KEYS);
-
-            // Check each setting individually
-            STORAGE_KEYS.forEach(key => {
-                console.log(`Setting ${key}:`, data[key], 'type:', typeof data[key]);
-            });
-
             currentSettings = data;
-            console.log('Final currentSettings:', currentSettings);
 
             // Test all selectors first
             testSelectors();
@@ -697,27 +635,138 @@ try {
         }, 100);
     });
 
-    // Listen for focus events on search inputs to catch when search dropdown appears
-    document.addEventListener('focusin', (event) => {
-        if (event.target.matches && event.target.matches('input[type="search"], input[placeholder*="search"], input[aria-label*="search"]')) {
-            console.log('Search input focused, checking for trending elements');
+    // Enhanced search input detection with multiple event types
+    const handleSearchInteraction = (event) => {
+        // More comprehensive search input detection
+        const target = event.target;
 
-            // Test immediately
-            testTrendingContainer();
+        // Check if target is an element node
+        if (!target || target.nodeType !== Node.ELEMENT_NODE) {
+            return;
+        }
 
-            // Test with multiple delays
-            [100, 200, 500, 1000].forEach(delay => {
+        const isSearchInput = target && (
+            target.type === 'search' ||
+            target.getAttribute?.('role') === 'searchbox' ||
+            target.classList?.contains('search') ||
+            target.placeholder?.toLowerCase().includes('search') ||
+            target.getAttribute?.('aria-label')?.toLowerCase().includes('search') ||
+            target.id?.toLowerCase().includes('search') ||
+            target.className?.toLowerCase().includes('search')
+        );
+
+        if (isSearchInput) {
+            // Apply trending hiding immediately and with delays
+            [0, 50, 100, 200, 500, 1000].forEach(delay => {
                 setTimeout(() => {
-                    console.log(`Testing trending container after ${delay}ms delay`);
-                    testTrendingContainer();
-                    applyVisibilitySettings();
+                    if (currentSettings.hideTrending === true) {
+                        // Find and hide trending elements
+                        const trendingElements = findElements(SELECTORS.trending);
+                        trendingElements.forEach(element => {
+                            hideElement(element);
+                        });
+
+                        // Also try direct selectors for trending (including Shadow DOM)
+                        const directTrendingSelectors = [
+                            '#reddit-trending-searches-partial-container',
+                            'faceplate-tracker[data-testid="reddit-trending-result"]',
+                            '[role="menu"]',
+                            '[role="listbox"]'
+                        ];
+
+                        directTrendingSelectors.forEach(selector => {
+                            // Use our Shadow DOM-aware findElements function
+                            const elements = findElements(selector);
+                            elements.forEach(element => {
+                                // Check if it contains trending content
+                                const text = element.innerText?.toLowerCase() || '';
+                                if (text.includes('trending') || element.getAttribute('data-testid') === 'reddit-trending-result') {
+                                    hideElement(element);
+                                }
+                            });
+                        });
+                    }
                 }, delay);
+            });
+        }
+    };
+
+    // Listen for multiple event types on search inputs
+    document.addEventListener('focusin', handleSearchInteraction, true);
+    document.addEventListener('focus', handleSearchInteraction, true);
+    document.addEventListener('click', handleSearchInteraction, true);
+    document.addEventListener('input', handleSearchInteraction, true);
+
+    // Enhanced mutation observer to catch dynamically created search dropdowns (including Shadow DOM)
+    const searchObserver = new MutationObserver((mutations) => {
+        if (currentSettings.hideTrending === true) {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if the added node contains trending elements (including Shadow DOM)
+                        const trendingInNode = findElements('#reddit-trending-searches-partial-container, faceplate-tracker[data-testid="reddit-trending-result"]');
+                        if (trendingInNode.length > 0) {
+                            trendingInNode.forEach(element => hideElement(element));
+                        }
+
+                        // Check if the node itself is a trending element
+                        if (node.id === 'reddit-trending-searches-partial-container' ||
+                            node.getAttribute?.('data-testid') === 'reddit-trending-result') {
+                            hideElement(node);
+                        }
+
+                        // If this node has a shadow root, observe it too
+                        if (node.shadowRoot) {
+                            searchObserver.observe(node.shadowRoot, { childList: true, subtree: true });
+                        }
+                    }
+                });
             });
         }
     });
 
-    // Add manual test function to global scope for debugging
+    searchObserver.observe(document.body, { childList: true, subtree: true });
+
+    // Also observe existing shadow roots
+    const observeExistingShadowRoots = () => {
+        const elementsWithShadow = document.querySelectorAll('*');
+        elementsWithShadow.forEach(element => {
+            if (element.shadowRoot) {
+                searchObserver.observe(element.shadowRoot, { childList: true, subtree: true });
+            }
+        });
+    };
+
+    // Set up shadow root observation with delay to catch dynamically created ones
+    setTimeout(observeExistingShadowRoots, 100);
+    setTimeout(observeExistingShadowRoots, 500);
+    setTimeout(observeExistingShadowRoots, 1000);
+
+    // Add manual test functions to global scope for debugging
     window.testTrending = testTrendingContainer;
+
+    // Shadow DOM test function
+    window.testShadowDOM = () => {
+        console.log('=== TESTING SHADOW DOM SEARCH ===');
+
+        // Count shadow roots
+        const elementsWithShadow = document.querySelectorAll('*');
+        const shadowRoots = Array.from(elementsWithShadow).filter(el => el.shadowRoot);
+        console.log('Found', shadowRoots.length, 'elements with shadow DOM');
+
+        // Test trending search with Shadow DOM
+        const trendingElements = findElements('#reddit-trending-searches-partial-container, faceplate-tracker[data-testid="reddit-trending-result"]');
+        console.log('Found', trendingElements.length, 'trending elements (including Shadow DOM)');
+
+        trendingElements.forEach((element, index) => {
+            console.log(`Trending element ${index + 1}:`, element);
+            console.log('  - In shadow DOM:', !document.contains(element));
+            console.log('  - ID:', element.id);
+            console.log('  - Data-testid:', element.getAttribute('data-testid'));
+        });
+
+        return { shadowRoots: shadowRoots.length, trendingElements: trendingElements.length };
+    };
 
     // Function to scan for common Reddit elements
     const scanForRedditElements = () => {
@@ -751,6 +800,68 @@ try {
 
     // Add to global scope for debugging
     window.scanReddit = scanForRedditElements;
+
+    // Add manual trending search test function
+    window.testTrendingSearch = () => {
+        console.log('=== MANUAL TRENDING SEARCH TEST ===');
+        console.log('Current hideTrending setting:', currentSettings.hideTrending);
+
+        // Try all possible trending/search selectors
+        const selectors = [
+            '#reddit-trending-searches-partial-container',
+            '[data-testid="trending-searches"]',
+            '[data-testid="search-dropdown"]',
+            '.trending-searches',
+            '.search-dropdown',
+            '[data-testid="search-results"]',
+            '[role="menu"]',
+            '[role="listbox"]',
+            '[data-testid*="trending"]',
+            '[data-testid*="search"]',
+            '.search-results',
+            '[aria-label*="trending"]',
+            '[aria-label*="search"]',
+            'ul[role="menu"]',
+            'ul[role="listbox"]',
+            'div[role="menu"]',
+            'div[role="listbox"]'
+        ];
+
+        selectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            console.log(`Selector "${selector}": ${elements.length} elements found`);
+            if (elements.length > 0) {
+                elements.forEach((el, i) => {
+                    console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
+                    console.log(`  Display:`, window.getComputedStyle(el).display);
+                    console.log(`  Has visible class:`, el.classList.contains('unhook-reddit-visible'));
+                    console.log(`  Inner text preview:`, el.innerText?.substring(0, 100));
+                });
+            }
+        });
+
+        // Also look for elements that appear when search is focused
+        console.log('Looking for search input elements...');
+        const searchInputs = document.querySelectorAll('input[type="search"], input[placeholder*="search"], input[aria-label*="search"]');
+        console.log('Search inputs found:', searchInputs.length);
+
+        if (searchInputs.length > 0) {
+            console.log('Focusing first search input to trigger dropdown...');
+            searchInputs[0].focus();
+
+            setTimeout(() => {
+                console.log('Re-checking for trending elements after focus...');
+                selectors.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    if (elements.length > 0) {
+                        console.log(`After focus - Selector "${selector}": ${elements.length} elements found`);
+                    }
+                });
+            }, 500);
+        }
+
+        console.log('=== END MANUAL TRENDING TEST ===');
+    };
 
     // Add manual left sidebar test function
     window.testLeftSidebar = () => {
