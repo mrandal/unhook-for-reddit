@@ -5,19 +5,10 @@
   "manifest_version": 3,
   "permissions": [
     "storage",
-    "activeTab",
-    "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "activeTab"
   ],
   "host_permissions": [
-    "*://instagram.com/*",
-    "*://*.instagram.com/*",
-    "*://linkedin.com/*",
-    "*://*.linkedin.com/*",
-    "*://x.com/*",
-    "*://*.x.com/*",
-    "*://twitter.com/*",
-    "*://*.twitter.com/*"
+    "*://www.reddit.com/*"
   ],
   "options_page": "options.html",
   "content_scripts": [
@@ -36,15 +27,6 @@
   ],
   "action": {
     "default_popup": "options.html"
-  },
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "block-rules",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
   },
   "browser_specific_settings": {
     "gecko": {
