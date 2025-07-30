@@ -561,6 +561,94 @@ try {
         });
     }
 
+    // Handle navigation changes to prevent flash
+    let currentUrl = window.location.href;
+    let isNavigating = false;
+
+    const handleNavigationStart = () => {
+        if (!isNavigating) {
+            console.log('Navigation starting, reinforcing hiding...');
+            isNavigating = true;
+
+            // Immediately re-hide elements that should be hidden to prevent flash
+            if (currentSettings && Object.keys(currentSettings).length > 0) {
+                const isSubredditPage = window.location.pathname.startsWith('/r');
+
+                // Force hide elements that should be hidden during navigation
+                if (!isSubredditPage && currentSettings.hideHomeFeed) {
+                    const homeFeedElements = findElements(SELECTORS.homeFeed);
+                    homeFeedElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.setProperty('visibility', 'hidden', 'important');
+                        el.style.setProperty('opacity', '0', 'important');
+                    });
+                }
+
+                if (isSubredditPage && currentSettings.hideSubredditFeed) {
+                    const subredditFeedElements = findElements(SELECTORS.subredditFeed);
+                    subredditFeedElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.setProperty('visibility', 'hidden', 'important');
+                        el.style.setProperty('opacity', '0', 'important');
+                    });
+                }
+            }
+        }
+    };
+
+    const handleNavigation = () => {
+        const newUrl = window.location.href;
+        if (newUrl !== currentUrl) {
+            console.log('Navigation detected:', currentUrl, '->', newUrl);
+            currentUrl = newUrl;
+            isNavigating = false;
+
+            // Immediately apply settings for the new page context
+            setTimeout(() => {
+                console.log('Applying settings after navigation');
+                applyVisibilitySettings();
+            }, 50); // Small delay to let page elements load
+        }
+    };
+
+    // Listen for clicks on links to catch navigation before it starts
+    document.addEventListener('click', (event) => {
+        const target = event.target.closest('a[href]');
+        if (target && target.href && target.href.includes('reddit.com')) {
+            console.log('Link click detected, preparing for navigation...');
+            handleNavigationStart();
+        }
+    }, true); // Use capture phase to catch early
+
+    // Listen for navigation changes
+    const navigationObserver = new MutationObserver(handleNavigation);
+    navigationObserver.observe(document, { childList: true, subtree: true });
+
+    // Also listen for popstate (back/forward navigation)
+    window.addEventListener('popstate', (event) => {
+        handleNavigationStart();
+        setTimeout(handleNavigation, 10);
+    });
+
+    // Listen for pushstate/replacestate (programmatic navigation)
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function () {
+        handleNavigationStart();
+        originalPushState.apply(history, arguments);
+        setTimeout(handleNavigation, 10);
+    };
+
+    history.replaceState = function () {
+        handleNavigationStart();
+        originalReplaceState.apply(history, arguments);
+        setTimeout(handleNavigation, 10);
+    };
+
+    // Also listen for beforeunload to catch navigation attempts
+    window.addEventListener('beforeunload', handleNavigationStart);
+
     // Set up observer for dynamically added elements
     const observer = new MutationObserver((mutations) => {
         let shouldReapply = false;

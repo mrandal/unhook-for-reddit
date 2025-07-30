@@ -1,12 +1,18 @@
 /* Hide elements by default to prevent flash of content */
 /* JavaScript will selectively show elements based on user settings */
+
+/* Always hide feeds initially - JavaScript will show the appropriate one */
 shreddit-feed,
+[data-testid="feed"],
+[data-testid="home-feed"],
+[data-testid="subreddit-feed"] {
+  display: none !important;
+}
+
+/* Hide other elements by default */
 #left-sidebar,
 recent-posts,
 #reddit-trending-searches-partial-container,
-[data-testid="feed"],
-[data-testid="home-feed"],
-[data-testid="subreddit-feed"],
 [data-testid="comment"],
 [data-testid="comment-tree"],
 [data-testid="recent-posts"],
@@ -17,6 +23,16 @@ recent-posts,
 [data-testid="navigation"],
 [data-testid="community-list"] {
   display: none !important;
+}
+
+/* Prevent flash during navigation by hiding feeds more aggressively */
+body shreddit-feed,
+body [data-testid="feed"],
+body [data-testid="home-feed"],
+body [data-testid="subreddit-feed"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Add a class that JavaScript can use to show elements - make these very specific */
