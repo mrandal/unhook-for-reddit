@@ -1,7 +1,90 @@
+/* Hide elements by default to prevent flash of content */
+/* JavaScript will selectively show elements based on user settings */
 shreddit-feed,
 #left-sidebar,
-#right-sidebar-container,
 recent-posts,
-#reddit-trending-searches-partial-container {
+#reddit-trending-searches-partial-container,
+[data-testid="feed"],
+[data-testid="home-feed"],
+[data-testid="subreddit-feed"],
+[data-testid="comment"],
+[data-testid="comment-tree"],
+[data-testid="recent-posts"],
+[data-testid="trending-posts"],
+[data-testid="trending-searches"],
+[data-testid="search-dropdown"],
+[data-testid="left-sidebar"],
+[data-testid="navigation"],
+[data-testid="community-list"] {
   display: none !important;
+}
+
+/* Add a class that JavaScript can use to show elements - make these very specific */
+shreddit-feed.unhook-reddit-visible,
+#left-sidebar.unhook-reddit-visible,
+recent-posts.unhook-reddit-visible,
+#reddit-trending-searches-partial-container.unhook-reddit-visible,
+[data-testid="feed"].unhook-reddit-visible,
+[data-testid="home-feed"].unhook-reddit-visible,
+[data-testid="subreddit-feed"].unhook-reddit-visible,
+[data-testid="comment"].unhook-reddit-visible,
+[data-testid="comment-tree"].unhook-reddit-visible,
+[data-testid="recent-posts"].unhook-reddit-visible,
+[data-testid="trending-posts"].unhook-reddit-visible,
+[data-testid="trending-searches"].unhook-reddit-visible,
+[data-testid="search-dropdown"].unhook-reddit-visible,
+[data-testid="left-sidebar"].unhook-reddit-visible,
+[data-testid="navigation"].unhook-reddit-visible,
+[data-testid="community-list"].unhook-reddit-visible,
+nav.unhook-reddit-visible,
+.unhook-reddit-visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* More specific overrides for different display types */
+.unhook-reddit-visible[data-display="flex"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.unhook-reddit-visible[data-display="grid"] {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.unhook-reddit-visible[data-display="inline"] {
+  display: inline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.unhook-reddit-visible[data-display="inline-block"] {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure elements without the visible class stay hidden */
+#left-sidebar:not(.unhook-reddit-visible),
+[data-testid="left-sidebar"]:not(.unhook-reddit-visible),
+[data-testid="navigation"]:not(.unhook-reddit-visible),
+shreddit-feed:not(.unhook-reddit-visible),
+[data-testid="feed"]:not(.unhook-reddit-visible),
+[data-testid="home-feed"]:not(.unhook-reddit-visible),
+[data-testid="subreddit-feed"]:not(.unhook-reddit-visible),
+[data-testid="comment"]:not(.unhook-reddit-visible),
+[data-testid="comment-tree"]:not(.unhook-reddit-visible),
+recent-posts:not(.unhook-reddit-visible),
+[data-testid="recent-posts"]:not(.unhook-reddit-visible),
+[data-testid="trending-posts"]:not(.unhook-reddit-visible),
+#reddit-trending-searches-partial-container:not(.unhook-reddit-visible),
+[data-testid="trending-searches"]:not(.unhook-reddit-visible),
+[data-testid="search-dropdown"]:not(.unhook-reddit-visible) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
