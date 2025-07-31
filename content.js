@@ -17,7 +17,8 @@ try {
         "hideExplore",
         "hideCustomFeeds",
         "hideRecentSubreddits",
-        "hideCommunities"
+        "hideCommunities",
+        "darkMode"
     ];
 
     const SELECTORS = {
@@ -466,7 +467,8 @@ try {
                     hideExplore: data.hideExplore === true,
                     hideCustomFeeds: data.hideCustomFeeds === true,
                     hideRecentSubreddits: data.hideRecentSubreddits === true,
-                    hideCommunities: data.hideCommunities === true
+                    hideCommunities: data.hideCommunities === true,
+                    darkMode: data.darkMode === true
                 };
 
                 // Apply settings immediately after loading
@@ -484,7 +486,8 @@ try {
                     hideExplore: false,
                     hideCustomFeeds: false,
                     hideRecentSubreddits: false,
-                    hideCommunities: false
+                    hideCommunities: false,
+                    darkMode: false
                 };
                 applyVisibilitySettings();
             });
@@ -500,7 +503,8 @@ try {
                 hideExplore: false,
                 hideCustomFeeds: false,
                 hideRecentSubreddits: false,
-                hideCommunities: false
+                hideCommunities: false,
+                darkMode: false
             };
             applyVisibilitySettings();
         }

@@ -15,7 +15,8 @@ const STORAGE_KEYS = [
     "hideExplore",
     "hideCustomFeeds",
     "hideRecentSubreddits",
-    "hideCommunities"
+    "hideCommunities",
+    "darkMode"
 ];
 
 const OPTION_IDS = {
@@ -29,9 +30,11 @@ const OPTION_IDS = {
     hideExplore: "hideExplore",
     hideCustomFeeds: "hideCustomFeeds",
     hideRecentSubreddits: "hideRecentSubreddits",
-    hideCommunities: "hideCommunities"
+    hideCommunities: "hideCommunities",
+    darkMode: "darkMode"
 };
 
+const darkMode = document.getElementById(OPTION_IDS.darkMode);
 const hideHomeFeed = document.getElementById(OPTION_IDS.hideHomeFeed);
 const hideSubredditFeed = document.getElementById(OPTION_IDS.hideSubredditFeed);
 const hideSideBar = document.getElementById(OPTION_IDS.hideSideBar);
@@ -60,11 +63,21 @@ const updateSidebarSubOptions = () => {
     });
 };
 
+// Function to apply dark mode
+const applyDarkMode = (isDark) => {
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+};
+
 // Load settings on page load
 document.addEventListener("DOMContentLoaded", () => {
     console.log('Loading settings...');
     browser.storage.sync.get(STORAGE_KEYS, (data = {}) => {
         console.log('Loaded data:', data);
+        darkMode.checked = data.darkMode || false;
         hideHomeFeed.checked = data.hideHomeFeed || false;
         hideSubredditFeed.checked = data.hideSubredditFeed || false;
         hideSideBar.checked = data.hideSideBar || false;
@@ -77,6 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
         hideRecentSubreddits.checked = data.hideRecentSubreddits || false;
         hideCommunities.checked = data.hideCommunities || false;
 
+        // Apply dark mode immediately
+        applyDarkMode(darkMode.checked);
+
         // Update sidebar sub-options state
         updateSidebarSubOptions();
     });
@@ -85,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Auto-save when any toggle is changed
 const saveSettings = () => {
     const settings = {
+        darkMode: darkMode.checked,
         hideHomeFeed: hideHomeFeed.checked,
         hideSubredditFeed: hideSubredditFeed.checked,
         hideSideBar: hideSideBar.checked,
@@ -113,7 +130,14 @@ const handleSidebarToggle = () => {
     saveSettings();
 };
 
+// Special handler for dark mode toggle that also applies the theme
+const handleDarkModeToggle = () => {
+    applyDarkMode(darkMode.checked);
+    saveSettings();
+};
+
 // Add event listeners for auto-save
+darkMode.addEventListener('change', handleDarkModeToggle); // Special handler for dark mode
 hideHomeFeed.addEventListener('change', saveSettings);
 hideSubredditFeed.addEventListener('change', saveSettings);
 hideSideBar.addEventListener('change', handleSidebarToggle); // Special handler for sidebar
