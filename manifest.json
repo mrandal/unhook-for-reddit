@@ -32,5 +32,12 @@
     "gecko": {
       "id": "unhook-reddit@example.com"
     }
+  },
+  "icons": {
+    "16": "assets/unhook-reddit-16.png",
+    "48": "assets/unhook-reddit-48.png",
+    "128": "assets/unhook-reddit-128.png",
+    "256": "assets/unhook-reddit-256.png",
+    "512": "assets/unhook-reddit-512.png"
   }
 }
