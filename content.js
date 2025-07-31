@@ -381,8 +381,6 @@ try {
             // Run discovery function first
             discoverSidebarElements();
 
-            const popularSelectors = SELECTORS.popular.split(', ');
-
             const popularElements = findElements(SELECTORS.popular);
             console.log('Found popular elements:', popularElements.length);
 
@@ -397,105 +395,55 @@ try {
 
         // Handle Explore button (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
-            console.log('Processing explore elements. hideExplore setting:', currentSettings.hideExplore);
-            console.log('Explore selector:', SELECTORS.explore);
-
-            // Additional debugging for Explore elements
-            console.log('=== EXPLORE ELEMENT DEBUGGING ===');
-            const exploreSelectors = SELECTORS.explore.split(', ');
-            exploreSelectors.forEach(sel => {
-                const elements = document.querySelectorAll(sel.trim());
-                console.log(`Selector "${sel.trim()}" found ${elements.length} elements`);
-                if (elements.length > 0) {
-                    Array.from(elements).slice(0, 2).forEach((el, i) => {
-                        console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
-                    });
-                }
-            });
-
-            // Try shadow DOM search for explore
-            try {
-                const shadowExplore = getSidebarShadowRoot().querySelectorAll('[id*="explore"], [class*="explore"]');
-                console.log('Shadow DOM explore search found:', shadowExplore.length);
-                Array.from(shadowExplore).forEach((el, i) => {
-                    console.log(`  Shadow explore ${i}:`, el.tagName, el.id, el.className);
-                });
-            } catch (e) {
-                console.log('Shadow DOM search for explore failed:', e.message);
-            }
-            console.log('=== END EXPLORE DEBUGGING ===');
 
             const exploreElements = findElements(SELECTORS.explore);
-            console.log('Found explore elements:', exploreElements.length);
 
             exploreElements.forEach(element => {
-                console.log('Processing explore element:', element.tagName, element.id, element.className);
                 if (currentSettings.hideExplore === true) {
-                    console.log('Hiding explore element');
                     hideElement(element);
                 } else {
-                    console.log('Showing explore element');
                     showElement(element);
                 }
             });
-            console.log('Explore elements:', exploreElements.length, 'hidden:', currentSettings.hideExplore === true);
         }
 
         // Handle Custom Feeds (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
-            console.log('Processing custom feeds elements. hideCustomFeeds setting:', currentSettings.hideCustomFeeds);
             const customFeedsElements = findElements(SELECTORS.customFeeds);
-            console.log('Found custom feeds elements:', customFeedsElements.length);
 
             customFeedsElements.forEach(element => {
-                console.log('Processing custom feeds element:', element.tagName, element.id, element.className);
                 if (currentSettings.hideCustomFeeds === true) {
-                    console.log('Hiding custom feeds element');
                     hideElement(element);
                 } else {
-                    console.log('Showing custom feeds element');
                     showElement(element);
                 }
             });
-            console.log('Custom feeds elements:', customFeedsElements.length, 'hidden:', currentSettings.hideCustomFeeds === true);
         }
 
         // Handle Recent Subreddits (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
-            console.log('Processing recent subreddits elements. hideRecentSubreddits setting:', currentSettings.hideRecentSubreddits);
             const recentSubredditsElements = findElements(SELECTORS.recentSubreddits);
-            console.log('Found recent subreddits elements:', recentSubredditsElements.length);
 
             recentSubredditsElements.forEach(element => {
-                console.log('Processing recent subreddits element:', element.tagName, element.id, element.className);
                 if (currentSettings.hideRecentSubreddits === true) {
-                    console.log('Hiding recent subreddits element');
                     hideElement(element);
                 } else {
-                    console.log('Showing recent subreddits element');
                     showElement(element);
                 }
             });
-            console.log('Recent subreddits elements:', recentSubredditsElements.length, 'hidden:', currentSettings.hideRecentSubreddits === true);
         }
 
         // Handle Communities (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
-            console.log('Processing communities elements. hideCommunities setting:', currentSettings.hideCommunities);
             const communitiesElements = findElements(SELECTORS.communities);
-            console.log('Found communities elements:', communitiesElements.length);
 
             communitiesElements.forEach(element => {
-                console.log('Processing communities element:', element.tagName, element.id, element.className);
                 if (currentSettings.hideCommunities === true) {
-                    console.log('Hiding communities element');
                     hideElement(element);
                 } else {
-                    console.log('Showing communities element');
                     showElement(element);
                 }
             });
-            console.log('Communities elements:', communitiesElements.length, 'hidden:', currentSettings.hideCommunities === true);
         }
 
     };
@@ -524,14 +472,14 @@ try {
                 // Apply settings immediately after loading
                 applyVisibilitySettings();
             }).catch((error) => {
-                // Fall back to default settings (all visible)
+                // Fall back to default settings
                 currentSettings = {
-                    hideHomeFeed: false,
+                    hideHomeFeed: true,
                     hideSubredditFeed: false,
-                    hideSideBar: false,
+                    hideSideBar: true,
                     hideComments: false,
                     hideRecentPosts: false,
-                    hideTrending: false,
+                    hideTrending: true,
                     hidePopular: false,
                     hideExplore: false,
                     hideCustomFeeds: false,
@@ -542,12 +490,12 @@ try {
             });
         } catch (error) {
             currentSettings = {
-                hideHomeFeed: false,
+                hideHomeFeed: true,
                 hideSubredditFeed: false,
-                hideSideBar: false,
+                hideSideBar: true,
                 hideComments: false,
                 hideRecentPosts: false,
-                hideTrending: false,
+                hideTrending: true,
                 hidePopular: false,
                 hideExplore: false,
                 hideCustomFeeds: false,
@@ -558,104 +506,25 @@ try {
         }
     };
 
-    // Main function to load and apply settings
-    const loadAndApplySettings = () => {
-        browser.storage.sync.get(STORAGE_KEYS, (data) => {
-            currentSettings = data;
-
-            // Test all selectors first
-            // testSelectors();
-
-            // Scan for Reddit elements
-            // scanForRedditElements();
-
-            // Also run a broader scan for debugging
-            // console.log('=== BROADER ELEMENT SCAN ===');
-            // const allDivs = document.querySelectorAll('div, aside, section, nav, article');
-            // console.log('Total divs/aside/section/nav/article found:', allDivs.length);
-
-            // Look for elements with specific keywords in id/class
-            // const sidebarLike = Array.from(allDivs).filter(el =>
-            //     el.id.toLowerCase().includes('sidebar') ||
-            //     el.className.toLowerCase().includes('sidebar') ||
-            //     el.id.toLowerCase().includes('side') ||
-            //     el.className.toLowerCase().includes('side')
-            // );
-            // console.log('Sidebar-like elements:', sidebarLike.length);
-            // sidebarLike.slice(0, 5).forEach((el, i) => {
-            //     console.log(`Sidebar-like ${i}:`, el.tagName, el.id, el.className);
-            // });
-
-            // const recentLike = Array.from(allDivs).filter(el =>
-            //     el.id.toLowerCase().includes('recent') ||
-            //     el.className.toLowerCase().includes('recent') ||
-            //     el.id.toLowerCase().includes('trending') ||
-            //     el.className.toLowerCase().includes('trending')
-            // );
-            // console.log('Recent/trending-like elements:', recentLike.length);
-            // recentLike.slice(0, 5).forEach((el, i) => {
-            //     console.log(`Recent-like ${i}:`, el.tagName, el.id, el.className);
-            // });
-
-            // const commentLike = Array.from(allDivs).filter(el =>
-            //     el.id.toLowerCase().includes('comment') ||
-            //     el.className.toLowerCase().includes('comment')
-            // );
-            // console.log('Comment-like elements:', commentLike.length);
-            // commentLike.slice(0, 5).forEach((el, i) => {
-            //     console.log(`Comment-like ${i}:`, el.tagName, el.id, el.className);
-            // });
-            // console.log('=== END BROADER SCAN ===');
-
-            // Apply visibility settings
-            applyVisibilitySettings();
-        });
-    };
-
     // Listen for storage changes to update settings dynamically
     browser.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'sync') {
-            console.log('Settings changed:', changes);
-
             // Update current settings with normalized boolean values
             Object.keys(changes).forEach(key => {
                 currentSettings[key] = changes[key].newValue === true;
-                console.log(`Updated setting ${key}: ${changes[key].oldValue} -> ${changes[key].newValue} (normalized: ${currentSettings[key]})`);
             });
 
-            console.log('Updated currentSettings:', currentSettings);
-
-            // Reapply visibility settings immediately
-            console.log('Reapplying visibility settings due to storage change...');
             applyVisibilitySettings();
         }
     });
 
     // Load and apply settings immediately on script load
-    console.log('Loading and applying settings immediately on script load');
     loadAndApplyImmediateSettings();
-
-    // Also load settings with full debugging (this might be redundant but ensures settings are loaded)
-    // setTimeout(() => {
-    //     loadAndApplySettings();
-    // }, 100);
-
-    // Retry element detection with delays to catch late-loading elements
-    // const retryElementDetection = () => {
-    //     console.log('Retrying element detection for sidebar components...');
-    //     applyVisibilitySettings();
-    // };
-
-    // Multiple retry attempts for sidebar elements that may load dynamically
-    // [500, 1000, 2000, 5000].forEach(delay => {
-    //     setTimeout(retryElementDetection, delay);
-    // });
 
     // Also apply settings very early if document is still loading
     if (document.readyState === 'loading') {
         // Apply settings again when DOM content is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, reapplying settings');
             applyVisibilitySettings();
         });
     }
@@ -666,7 +535,6 @@ try {
 
     const handleNavigationStart = (destinationUrl = null) => {
         if (!isNavigating) {
-            console.log('Navigation starting, reinforcing hiding...');
             isNavigating = true;
 
             // Immediately apply settings based on DESTINATION page to prevent flash
@@ -688,11 +556,6 @@ try {
                     // Fallback to current URL (for back/forward navigation)
                     isDestinationSubreddit = window.location.pathname.startsWith('/r');
                 }
-
-                console.log('Destination is subreddit page:', isDestinationSubreddit);
-                console.log('Destination URL:', destinationUrl);
-                console.log('Current settings - hideHomeFeed:', currentSettings.hideHomeFeed, 'hideSubredditFeed:', currentSettings.hideSubredditFeed);
-
                 // Apply settings based on DESTINATION page context
                 const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
 
@@ -725,7 +588,6 @@ try {
     const handleNavigation = () => {
         const newUrl = window.location.href;
         if (newUrl !== currentUrl) {
-            console.log('Navigation detected:', currentUrl, '->', newUrl);
             currentUrl = newUrl;
             isNavigating = false;
 
@@ -734,7 +596,6 @@ try {
 
             // Immediately apply settings for the new page context
             setTimeout(() => {
-                console.log('Applying settings after navigation');
                 applyVisibilitySettings();
             }, 50); // Small delay to let page elements load
         }
@@ -744,7 +605,6 @@ try {
     document.addEventListener('click', (event) => {
         const target = event.target.closest('a[href]');
         if (target && target.href && target.href.includes('reddit.com')) {
-            console.log('Link click detected, preparing for navigation...');
             handleNavigationStart(target.href); // Pass destination URL
         }
     }, true); // Use capture phase to catch early
@@ -819,13 +679,6 @@ try {
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Also reapply on clicks and other events that might trigger dynamic content
-    // document.addEventListener('click', () => {
-    //     setTimeout(() => {
-    //         applyVisibilitySettings();
-    //     }, 100);
-    // });
-
     // Enhanced search input detection with multiple event types
     const handleSearchInteraction = (event) => {
         // More comprehensive search input detection
@@ -868,82 +721,6 @@ try {
     // document.addEventListener('focus', handleSearchInteraction, true);
     // document.addEventListener('click', handleSearchInteraction, true);
     document.addEventListener('input', handleSearchInteraction, true);
-
-    // Enhanced mutation observer to catch dynamically created search dropdowns (including Shadow DOM)
-    // const searchObserver = new MutationObserver((mutations) => {
-    //     if (currentSettings.hideTrending === true) {
-    //         mutations.forEach(mutation => {
-    //             mutation.addedNodes.forEach(node => {
-    //                 if (node.nodeType === Node.ELEMENT_NODE) {
-    //                     // Check if the added node contains trending elements (including Shadow DOM)
-    //                     const trendingInNode = findElements('#reddit-trending-searches-partial-container, faceplate-tracker[data-testid="reddit-trending-result"]');
-    //                     if (trendingInNode.length > 0) {
-    //                         trendingInNode.forEach(element => hideElement(element));
-    //                     }
-
-    //                     // Check if the node itself is a trending element
-    //                     if (node.id === 'reddit-trending-searches-partial-container' ||
-    //                         node.getAttribute?.('data-testid') === 'reddit-trending-result') {
-    //                         hideElement(node);
-    //                     }
-
-    //                     // If this node has a shadow root, observe it too
-    //                     if (node.shadowRoot) {
-    //                         // searchObserver.observe(node.shadowRoot, { childList: true, subtree: true });
-    //                     }
-    //                 }
-    //             });
-    //         });
-    //     }
-    // });
-
-    // searchObserver.observe(document.body, { childList: true, subtree: true });
-
-    // Also observe existing shadow roots
-    // const observeExistingShadowRoots = () => {
-    //     const elementsWithShadow = document.querySelectorAll('*');
-    //     elementsWithShadow.forEach(element => {
-    //         if (element.shadowRoot) {
-    //             searchObserver.observe(element.shadowRoot, { childList: true, subtree: true });
-    //         }
-    //     });
-    // };
-
-    // Set up shadow root observation with delay to catch dynamically created ones
-    // setTimeout(observeExistingShadowRoots, 100);
-
-    // Function to scan for common Reddit elements
-    const scanForRedditElements = () => {
-        console.log('=== SCANNING FOR REDDIT ELEMENTS ===');
-
-        // Common Reddit element patterns
-        const patterns = [
-            { name: 'posts', selectors: ['[data-testid*="post"]', '[data-testid*="feed"]', 'shreddit-feed'] },
-            { name: 'comments', selectors: ['[data-testid*="comment"]', 'shreddit-comment'] },
-            { name: 'sidebars', selectors: ['[data-testid*="sidebar"]', '[data-testid*="navigation"]', '[id*="sidebar"]'] },
-            { name: 'search', selectors: ['[data-testid*="search"]', '[role="search"]', '[aria-label*="search"]'] },
-            { name: 'trending', selectors: ['[data-testid*="trending"]', '[data-testid*="popular"]', '[role="menu"]'] }
-        ];
-
-        patterns.forEach(pattern => {
-            pattern.selectors.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                if (elements.length > 0) {
-                    console.log(`${pattern.name} (${selector}): ${elements.length} elements found`);
-                    elements.forEach((el, index) => {
-                        if (index < 3) { // Only log first 3 elements
-                            console.log(`  ${index}:`, el.tagName, el.id, el.className);
-                        }
-                    });
-                }
-            });
-        });
-
-        console.log('=== END SCAN ===');
-    };
-
-
-
 
 
 } catch (error) {
