@@ -788,20 +788,20 @@ try {
     loadAndApplyImmediateSettings();
 
     // Also load settings with full debugging (this might be redundant but ensures settings are loaded)
-    setTimeout(() => {
-        loadAndApplySettings();
-    }, 100);
+    // setTimeout(() => {
+    //     loadAndApplySettings();
+    // }, 100);
 
     // Retry element detection with delays to catch late-loading elements
-    const retryElementDetection = () => {
-        console.log('Retrying element detection for sidebar components...');
-        applyVisibilitySettings();
-    };
+    // const retryElementDetection = () => {
+    //     console.log('Retrying element detection for sidebar components...');
+    //     applyVisibilitySettings();
+    // };
 
     // Multiple retry attempts for sidebar elements that may load dynamically
-    [500, 1000, 2000, 5000].forEach(delay => {
-        setTimeout(retryElementDetection, delay);
-    });
+    // [500, 1000, 2000, 5000].forEach(delay => {
+    //     setTimeout(retryElementDetection, delay);
+    // });
 
     // Also apply settings very early if document is still loading
     if (document.readyState === 'loading') {
@@ -908,7 +908,7 @@ try {
     // Also listen for popstate (back/forward navigation)
     window.addEventListener('popstate', (event) => {
         handleNavigationStart(); // No destination URL available for back/forward
-        setTimeout(handleNavigation, 10);
+        // setTimeout(handleNavigation, 10);
     });
 
     // Listen for pushstate/replacestate (programmatic navigation)
@@ -963,13 +963,13 @@ try {
     });
 
     // Start observing when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            observer.observe(document.body, { childList: true, subtree: true });
-        });
-    } else {
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
+    // if (document.readyState === 'loading') {
+    //     document.addEventListener('DOMContentLoaded', () => {
+    //         observer.observe(document.body, { childList: true, subtree: true });
+    //     });
+    // } else {
+    //     observer.observe(document.body, { childList: true, subtree: true });
+    // }
 
     // Also reapply on clicks and other events that might trigger dynamic content
     // document.addEventListener('click', () => {
@@ -1008,26 +1008,6 @@ try {
                         trendingElements.forEach(element => {
                             hideElement(element);
                         });
-
-                        // Also try direct selectors for trending (including Shadow DOM)
-                        const directTrendingSelectors = [
-                            '#reddit-trending-searches-partial-container',
-                            'faceplate-tracker[data-testid="reddit-trending-result"]',
-                            '[role="menu"]',
-                            '[role="listbox"]'
-                        ];
-
-                        directTrendingSelectors.forEach(selector => {
-                            // Use our Shadow DOM-aware findElements function
-                            const elements = findElements(selector);
-                            elements.forEach(element => {
-                                // Check if it contains trending content
-                                const text = element.innerText?.toLowerCase() || '';
-                                if (text.includes('trending') || element.getAttribute('data-testid') === 'reddit-trending-result') {
-                                    hideElement(element);
-                                }
-                            });
-                        });
                     }
                 }, delay);
             });
@@ -1038,7 +1018,7 @@ try {
     document.addEventListener('focusin', handleSearchInteraction, true);
     // document.addEventListener('focus', handleSearchInteraction, true);
     // document.addEventListener('click', handleSearchInteraction, true);
-    // document.addEventListener('input', handleSearchInteraction, true);
+    document.addEventListener('input', handleSearchInteraction, true);
 
     // Enhanced mutation observer to catch dynamically created search dropdowns (including Shadow DOM)
     const searchObserver = new MutationObserver((mutations) => {
