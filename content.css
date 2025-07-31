@@ -24,6 +24,28 @@ faceplate-tracker[data-testid="reddit-trending-result"],
   display: none !important;
 }
 
+/* Hide sidebar sub-elements by default - JavaScript will show based on settings */
+#popular-posts,
+[id="popular-posts"],
+li[id="popular-posts"],
+#explore-communities,
+[id="explore"],
+li[id="explore"],
+a[href*="/r/popular"],
+a[href*="/explore"],
+[id*="multireddits_section"],
+reddit-recent-pages,
+[class*="popular"],
+[class*="explore"],
+[class*="custom-feed"],
+[class*="multireddit"],
+[class*="recent-subreddit"],
+[class*="communities"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 /* Prevent flash during navigation by hiding feeds more aggressively */
 body shreddit-feed,
 body [data-testid="feed"],
@@ -53,6 +75,22 @@ faceplate-tracker[data-testid="reddit-trending-result"].unhook-reddit-visible,
 [data-testid="navigation"].unhook-reddit-visible,
 [data-testid="community-list"].unhook-reddit-visible,
 nav.unhook-reddit-visible,
+#popular-posts.unhook-reddit-visible,
+[id="popular-posts"].unhook-reddit-visible,
+li[id="popular-posts"].unhook-reddit-visible,
+#explore-communities.unhook-reddit-visible,
+[id="explore"].unhook-reddit-visible,
+li[id="explore"].unhook-reddit-visible,
+a[href*="/r/popular"].unhook-reddit-visible,
+a[href*="/explore"].unhook-reddit-visible,
+[id*="multireddits_section"].unhook-reddit-visible,
+reddit-recent-pages.unhook-reddit-visible,
+[class*="popular"].unhook-reddit-visible,
+[class*="explore"].unhook-reddit-visible,
+[class*="custom-feed"].unhook-reddit-visible,
+[class*="multireddit"].unhook-reddit-visible,
+[class*="recent-subreddit"].unhook-reddit-visible,
+[class*="communities"].unhook-reddit-visible,
 .unhook-reddit-visible {
   display: block !important;
   visibility: visible !important;

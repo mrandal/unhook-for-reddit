@@ -12,7 +12,12 @@ try {
         "hideSideBar",
         "hideComments",
         "hideRecentPosts",
-        "hideTrending"
+        "hideTrending",
+        "hidePopular",
+        "hideExplore",
+        "hideCustomFeeds",
+        "hideRecentSubreddits",
+        "hideCommunities"
     ];
 
     const SELECTORS = {
@@ -22,7 +27,55 @@ try {
         recentPosts: "recent-posts, [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
         trending: "#reddit-trending-searches-partial-container, faceplate-tracker[data-testid='reddit-trending-result']",
         leftSidebar: "#left-sidebar, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
-        rightSidebar: "#right-sidebar-container, [data-testid='right-sidebar'], [data-testid='sidebar'], .right-sidebar, .sidebar, [data-testid='community-info'], [data-testid='about-community']"
+        popular: "#popular-posts, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
+        explore: "#explore-communities, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
+        customFeeds: "[id*='multireddits_section'], [data-testid='custom-feeds'], [id*='custom'], [id*='feeds'], [class*='custom-feed'], [class*='multireddit']",
+        recentSubreddits: "reddit-recent-pages, [data-testid='recent-subreddits'], [id*='recent'], [class*='recent-subreddit'], [class*='recent']",
+        communities: "[data-testid='communities'], [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
+    };
+
+    // Diagnostic function to discover sidebar elements
+    const discoverSidebarElements = () => {
+        console.log('=== SIDEBAR ELEMENT DISCOVERY ===');
+
+        // Search in main document
+        console.log('--- Main Document ---');
+        const allLinks = document.querySelectorAll('a[href*="/r/popular"], a[href*="/explore"]');
+        console.log('Found links to popular/explore:', allLinks.length);
+        allLinks.forEach((link, i) => {
+            console.log(`  Link ${i}: href="${link.href}" text="${link.textContent}" id="${link.id}" class="${link.className}"`);
+        });
+
+        // Search in sidebar shadow DOM
+        try {
+            console.log('--- Sidebar Shadow DOM ---');
+            const sidebarShadow = getSidebarShadowRoot();
+            const shadowLinks = sidebarShadow.querySelectorAll('a, li, div, span');
+            console.log('Found elements in sidebar shadow:', shadowLinks.length);
+
+            // Filter for potential popular/explore elements
+            const relevantElements = Array.from(shadowLinks).filter(el => {
+                const text = el.textContent?.toLowerCase() || '';
+                const id = el.id?.toLowerCase() || '';
+                const className = el.className?.toLowerCase() || '';
+                const href = el.href?.toLowerCase() || '';
+
+                return text.includes('popular') || text.includes('explore') ||
+                    id.includes('popular') || id.includes('explore') ||
+                    className.includes('popular') || className.includes('explore') ||
+                    href.includes('popular') || href.includes('explore');
+            });
+
+            console.log('Relevant elements found:', relevantElements.length);
+            relevantElements.forEach((el, i) => {
+                console.log(`  Element ${i}: ${el.tagName} id="${el.id}" class="${el.className}" text="${el.textContent?.trim()}" href="${el.href || 'N/A'}"`);
+            });
+
+        } catch (e) {
+            console.log('Sidebar shadow DOM access failed:', e.message);
+        }
+
+        console.log('=== END DISCOVERY ===');
     };
 
     // Store current settings globally
@@ -30,6 +83,62 @@ try {
 
     // Store original display values to restore them properly
     let originalDisplayValues = new Map();
+
+    // Define redirect mappings for better maintainability
+    const REDIRECT_MAPPINGS = [
+        {
+            check: (path) => path.startsWith('/r/popular'),
+            setting: 'hidePopular',
+            message: 'Popular page detected, redirecting to home...'
+        },
+        {
+            check: (path) => path === '/explore' || path.startsWith('/explore/'),
+            setting: 'hideExplore',
+            message: 'Explore page detected, redirecting to home...'
+        },
+        {
+            check: (path) => path.startsWith('/r/popular'),
+            setting: 'hideSideBar',
+            message: 'Popular page detected (sidebar hidden), redirecting to home...'
+        },
+        {
+            check: (path) => path === '/explore' || path.startsWith('/explore/'),
+            setting: 'hideSideBar',
+            message: 'Explore page detected (sidebar hidden), redirecting to home...'
+        }
+    ];
+
+    // Check for page redirects early (before page fully loads)
+    const checkPageRedirects = () => {
+        const currentPath = window.location.pathname;
+        const activeRedirects = REDIRECT_MAPPINGS.filter(redirect => redirect.check(currentPath));
+
+        if (activeRedirects.length > 0) {
+            const settingsToCheck = activeRedirects.map(r => r.setting);
+
+            // Use Promise-based approach for better error handling
+            browser.storage.sync.get(settingsToCheck)
+                .then((data) => {
+                    for (const redirect of activeRedirects) {
+                        if (data[redirect.setting] === true) {
+                            console.log(redirect.message);
+                            // Use replace instead of href to avoid adding to browser history
+                            // Add small delay to ensure console.log is visible
+                            // setTimeout(() => {
+                            window.location.replace('https://www.reddit.com/');
+                            // }, 1);
+                            return; // Stop after first redirect
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.warn('Failed to check redirect settings:', error);
+                });
+        }
+    };
+
+    // Run redirect check immediately (before DOM is ready)
+    checkPageRedirects();
 
     // Helper function to store original display value
     const storeOriginalDisplay = (element) => {
@@ -128,9 +237,14 @@ try {
         return search.shadowRoot;
     };
 
-    const getTrendingContainer = () => {
-        const searchShadowRoot = getSearchShadowRoot();
-        return searchShadowRoot.querySelector('#reddit-trending-searches-partial-container');
+    const getSidebarShadowRoot = () => {
+        const sidebar = document.querySelector('reddit-sidebar-nav');
+        return sidebar.shadowRoot;
+    };
+
+    const getLeftTopShadowRoot = () => {
+        const leftTop = document.querySelector('left-nav-top-section');
+        return leftTop.shadowRoot;
     };
 
     // Function to manually test trending container detection
@@ -182,6 +296,7 @@ try {
     const applyVisibilitySettings = () => {
         const isSubredditPage = window.location.pathname.startsWith('/r');
         const isUserPage = window.location.pathname.startsWith('/user');
+        const isExplorePage = window.location.pathname.startsWith('/explore');
 
         // Safety check - if currentSettings is empty or undefined, show all elements
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
@@ -212,26 +327,32 @@ try {
 
             // Function to recursively search through shadow DOMs
             const searchWithShadowDOM = (root, selector) => {
-                try {
-                    return Array.from(getSearchShadowRoot().querySelectorAll(selector));
-                } catch (e) {
-                    return [];
+                let found = [];
+
+                // Try all known shadow roots
+                const shadowRootGetters = [
+                    () => getSearchShadowRoot(),
+                    () => getSidebarShadowRoot(),
+                    () => getLeftTopShadowRoot()
+                ];
+
+                for (const getter of shadowRootGetters) {
+                    try {
+                        const shadowRoot = getter();
+                        if (shadowRoot) {
+                            found = Array.from(shadowRoot.querySelectorAll(selector));
+                            if (found.length > 0) {
+                                console.log(`Found ${found.length} elements with selector "${selector}" in shadow DOM`);
+                                return found;
+                            }
+                        }
+                    } catch (e) {
+                        // Continue to next shadow root if this one fails
+                        console.log(`Shadow root access failed for selector "${selector}":`, e.message);
+                    }
                 }
 
-                // let found = [];
-
-                // // Search in current root
-                // found = found.concat(searchInRoot(root, selector));
-
-                // // Search in all shadow roots
-                // const elementsWithShadow = root.querySelectorAll('*');
-                // elementsWithShadow.forEach(element => {
-                //     if (element.shadowRoot) {
-                //         found = found.concat(searchWithShadowDOM(element.shadowRoot, selector));
-                //     }
-                // });
-
-                // return found;
+                return found;
             };
 
             // Try each selector
@@ -256,7 +377,7 @@ try {
 
         // Handle home feed
         const homeFeedElements = findElements(SELECTORS.homeFeed);
-        if (!isSubredditPage && !isUserPage) {
+        if (!isSubredditPage && !isUserPage && !isExplorePage) {
             console.log('Processing home feed elements. hideHomeFeed setting:', currentSettings.hideHomeFeed);
             homeFeedElements.forEach(element => {
                 if (currentSettings.hideHomeFeed === true) {
@@ -375,6 +496,158 @@ try {
             }
         });
 
+        // Handle Popular button (only when not on sidebar hidden mode)
+        if (!currentSettings.hideSideBar) {
+            console.log('Processing popular elements. hidePopular setting:', currentSettings.hidePopular);
+            console.log('Popular selector:', SELECTORS.popular);
+
+            // Additional debugging for Popular elements
+            console.log('=== POPULAR ELEMENT DEBUGGING ===');
+
+            // Run discovery function first
+            discoverSidebarElements();
+
+            const popularSelectors = SELECTORS.popular.split(', ');
+            popularSelectors.forEach(sel => {
+                const elements = document.querySelectorAll(sel.trim());
+                console.log(`Selector "${sel.trim()}" found ${elements.length} elements`);
+                if (elements.length > 0) {
+                    Array.from(elements).slice(0, 2).forEach((el, i) => {
+                        console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
+                    });
+                }
+            });
+
+            // Try shadow DOM search for popular
+            try {
+                const shadowPopular = getSidebarShadowRoot().querySelectorAll('[id*="popular"], [class*="popular"]');
+                console.log('Shadow DOM popular search found:', shadowPopular.length);
+                Array.from(shadowPopular).forEach((el, i) => {
+                    console.log(`  Shadow popular ${i}:`, el.tagName, el.id, el.className);
+                });
+            } catch (e) {
+                console.log('Shadow DOM search for popular failed:', e.message);
+            }
+            console.log('=== END POPULAR DEBUGGING ===');
+
+            const popularElements = findElements(SELECTORS.popular);
+            console.log('Found popular elements:', popularElements.length);
+
+            popularElements.forEach(element => {
+                console.log('Processing popular element:', element.tagName, element.id, element.className);
+                if (currentSettings.hidePopular === true) {
+                    console.log('Hiding popular element');
+                    hideElement(element);
+                } else {
+                    console.log('Showing popular element');
+                    showElement(element);
+                }
+            });
+            console.log('Popular elements:', popularElements.length, 'hidden:', currentSettings.hidePopular === true);
+        }
+
+        // Handle Explore button (only when not on sidebar hidden mode)
+        if (!currentSettings.hideSideBar) {
+            console.log('Processing explore elements. hideExplore setting:', currentSettings.hideExplore);
+            console.log('Explore selector:', SELECTORS.explore);
+
+            // Additional debugging for Explore elements
+            console.log('=== EXPLORE ELEMENT DEBUGGING ===');
+            const exploreSelectors = SELECTORS.explore.split(', ');
+            exploreSelectors.forEach(sel => {
+                const elements = document.querySelectorAll(sel.trim());
+                console.log(`Selector "${sel.trim()}" found ${elements.length} elements`);
+                if (elements.length > 0) {
+                    Array.from(elements).slice(0, 2).forEach((el, i) => {
+                        console.log(`  Element ${i}:`, el.tagName, el.id, el.className);
+                    });
+                }
+            });
+
+            // Try shadow DOM search for explore
+            try {
+                const shadowExplore = getSidebarShadowRoot().querySelectorAll('[id*="explore"], [class*="explore"]');
+                console.log('Shadow DOM explore search found:', shadowExplore.length);
+                Array.from(shadowExplore).forEach((el, i) => {
+                    console.log(`  Shadow explore ${i}:`, el.tagName, el.id, el.className);
+                });
+            } catch (e) {
+                console.log('Shadow DOM search for explore failed:', e.message);
+            }
+            console.log('=== END EXPLORE DEBUGGING ===');
+
+            const exploreElements = findElements(SELECTORS.explore);
+            console.log('Found explore elements:', exploreElements.length);
+
+            exploreElements.forEach(element => {
+                console.log('Processing explore element:', element.tagName, element.id, element.className);
+                if (currentSettings.hideExplore === true) {
+                    console.log('Hiding explore element');
+                    hideElement(element);
+                } else {
+                    console.log('Showing explore element');
+                    showElement(element);
+                }
+            });
+            console.log('Explore elements:', exploreElements.length, 'hidden:', currentSettings.hideExplore === true);
+        }
+
+        // Handle Custom Feeds (only when not on sidebar hidden mode)
+        if (!currentSettings.hideSideBar) {
+            console.log('Processing custom feeds elements. hideCustomFeeds setting:', currentSettings.hideCustomFeeds);
+            const customFeedsElements = findElements(SELECTORS.customFeeds);
+            console.log('Found custom feeds elements:', customFeedsElements.length);
+
+            customFeedsElements.forEach(element => {
+                console.log('Processing custom feeds element:', element.tagName, element.id, element.className);
+                if (currentSettings.hideCustomFeeds === true) {
+                    console.log('Hiding custom feeds element');
+                    hideElement(element);
+                } else {
+                    console.log('Showing custom feeds element');
+                    showElement(element);
+                }
+            });
+            console.log('Custom feeds elements:', customFeedsElements.length, 'hidden:', currentSettings.hideCustomFeeds === true);
+        }
+
+        // Handle Recent Subreddits (only when not on sidebar hidden mode)
+        if (!currentSettings.hideSideBar) {
+            console.log('Processing recent subreddits elements. hideRecentSubreddits setting:', currentSettings.hideRecentSubreddits);
+            const recentSubredditsElements = findElements(SELECTORS.recentSubreddits);
+            console.log('Found recent subreddits elements:', recentSubredditsElements.length);
+
+            recentSubredditsElements.forEach(element => {
+                console.log('Processing recent subreddits element:', element.tagName, element.id, element.className);
+                if (currentSettings.hideRecentSubreddits === true) {
+                    console.log('Hiding recent subreddits element');
+                    hideElement(element);
+                } else {
+                    console.log('Showing recent subreddits element');
+                    showElement(element);
+                }
+            });
+            console.log('Recent subreddits elements:', recentSubredditsElements.length, 'hidden:', currentSettings.hideRecentSubreddits === true);
+        }
+
+        // Handle Communities (only when not on sidebar hidden mode)
+        if (!currentSettings.hideSideBar) {
+            console.log('Processing communities elements. hideCommunities setting:', currentSettings.hideCommunities);
+            const communitiesElements = findElements(SELECTORS.communities);
+            console.log('Found communities elements:', communitiesElements.length);
+
+            communitiesElements.forEach(element => {
+                console.log('Processing communities element:', element.tagName, element.id, element.className);
+                if (currentSettings.hideCommunities === true) {
+                    console.log('Hiding communities element');
+                    hideElement(element);
+                } else {
+                    console.log('Showing communities element');
+                    showElement(element);
+                }
+            });
+            console.log('Communities elements:', communitiesElements.length, 'hidden:', currentSettings.hideCommunities === true);
+        }
 
     };
 
@@ -391,7 +664,12 @@ try {
                     hideSideBar: data.hideSideBar === true,
                     hideComments: data.hideComments === true,
                     hideRecentPosts: data.hideRecentPosts === true,
-                    hideTrending: data.hideTrending === true
+                    hideTrending: data.hideTrending === true,
+                    hidePopular: data.hidePopular === true,
+                    hideExplore: data.hideExplore === true,
+                    hideCustomFeeds: data.hideCustomFeeds === true,
+                    hideRecentSubreddits: data.hideRecentSubreddits === true,
+                    hideCommunities: data.hideCommunities === true
                 };
 
                 // Apply settings immediately after loading
@@ -404,7 +682,12 @@ try {
                     hideSideBar: false,
                     hideComments: false,
                     hideRecentPosts: false,
-                    hideTrending: false
+                    hideTrending: false,
+                    hidePopular: false,
+                    hideExplore: false,
+                    hideCustomFeeds: false,
+                    hideRecentSubreddits: false,
+                    hideCommunities: false
                 };
                 applyVisibilitySettings();
             });
@@ -415,7 +698,12 @@ try {
                 hideSideBar: false,
                 hideComments: false,
                 hideRecentPosts: false,
-                hideTrending: false
+                hideTrending: false,
+                hidePopular: false,
+                hideExplore: false,
+                hideCustomFeeds: false,
+                hideRecentSubreddits: false,
+                hideCommunities: false
             };
             applyVisibilitySettings();
         }
@@ -427,48 +715,48 @@ try {
             currentSettings = data;
 
             // Test all selectors first
-            testSelectors();
+            // testSelectors();
 
             // Scan for Reddit elements
-            scanForRedditElements();
+            // scanForRedditElements();
 
             // Also run a broader scan for debugging
-            console.log('=== BROADER ELEMENT SCAN ===');
-            const allDivs = document.querySelectorAll('div, aside, section, nav, article');
-            console.log('Total divs/aside/section/nav/article found:', allDivs.length);
+            // console.log('=== BROADER ELEMENT SCAN ===');
+            // const allDivs = document.querySelectorAll('div, aside, section, nav, article');
+            // console.log('Total divs/aside/section/nav/article found:', allDivs.length);
 
             // Look for elements with specific keywords in id/class
-            const sidebarLike = Array.from(allDivs).filter(el =>
-                el.id.toLowerCase().includes('sidebar') ||
-                el.className.toLowerCase().includes('sidebar') ||
-                el.id.toLowerCase().includes('side') ||
-                el.className.toLowerCase().includes('side')
-            );
-            console.log('Sidebar-like elements:', sidebarLike.length);
-            sidebarLike.slice(0, 5).forEach((el, i) => {
-                console.log(`Sidebar-like ${i}:`, el.tagName, el.id, el.className);
-            });
+            // const sidebarLike = Array.from(allDivs).filter(el =>
+            //     el.id.toLowerCase().includes('sidebar') ||
+            //     el.className.toLowerCase().includes('sidebar') ||
+            //     el.id.toLowerCase().includes('side') ||
+            //     el.className.toLowerCase().includes('side')
+            // );
+            // console.log('Sidebar-like elements:', sidebarLike.length);
+            // sidebarLike.slice(0, 5).forEach((el, i) => {
+            //     console.log(`Sidebar-like ${i}:`, el.tagName, el.id, el.className);
+            // });
 
-            const recentLike = Array.from(allDivs).filter(el =>
-                el.id.toLowerCase().includes('recent') ||
-                el.className.toLowerCase().includes('recent') ||
-                el.id.toLowerCase().includes('trending') ||
-                el.className.toLowerCase().includes('trending')
-            );
-            console.log('Recent/trending-like elements:', recentLike.length);
-            recentLike.slice(0, 5).forEach((el, i) => {
-                console.log(`Recent-like ${i}:`, el.tagName, el.id, el.className);
-            });
+            // const recentLike = Array.from(allDivs).filter(el =>
+            //     el.id.toLowerCase().includes('recent') ||
+            //     el.className.toLowerCase().includes('recent') ||
+            //     el.id.toLowerCase().includes('trending') ||
+            //     el.className.toLowerCase().includes('trending')
+            // );
+            // console.log('Recent/trending-like elements:', recentLike.length);
+            // recentLike.slice(0, 5).forEach((el, i) => {
+            //     console.log(`Recent-like ${i}:`, el.tagName, el.id, el.className);
+            // });
 
-            const commentLike = Array.from(allDivs).filter(el =>
-                el.id.toLowerCase().includes('comment') ||
-                el.className.toLowerCase().includes('comment')
-            );
-            console.log('Comment-like elements:', commentLike.length);
-            commentLike.slice(0, 5).forEach((el, i) => {
-                console.log(`Comment-like ${i}:`, el.tagName, el.id, el.className);
-            });
-            console.log('=== END BROADER SCAN ===');
+            // const commentLike = Array.from(allDivs).filter(el =>
+            //     el.id.toLowerCase().includes('comment') ||
+            //     el.className.toLowerCase().includes('comment')
+            // );
+            // console.log('Comment-like elements:', commentLike.length);
+            // commentLike.slice(0, 5).forEach((el, i) => {
+            //     console.log(`Comment-like ${i}:`, el.tagName, el.id, el.className);
+            // });
+            // console.log('=== END BROADER SCAN ===');
 
             // Apply visibility settings
             applyVisibilitySettings();
@@ -502,6 +790,17 @@ try {
     setTimeout(() => {
         loadAndApplySettings();
     }, 100);
+
+    // Retry element detection with delays to catch late-loading elements
+    const retryElementDetection = () => {
+        console.log('Retrying element detection for sidebar components...');
+        applyVisibilitySettings();
+    };
+
+    // Multiple retry attempts for sidebar elements that may load dynamically
+    [500, 1000, 2000, 5000].forEach(delay => {
+        setTimeout(retryElementDetection, delay);
+    });
 
     // Also apply settings very early if document is still loading
     if (document.readyState === 'loading') {
@@ -576,6 +875,9 @@ try {
             console.log('Navigation detected:', currentUrl, '->', newUrl);
             currentUrl = newUrl;
             isNavigating = false;
+
+            // Check for page redirects after navigation
+            checkPageRedirects();
 
             // Immediately apply settings for the new page context
             setTimeout(() => {

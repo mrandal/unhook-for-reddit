@@ -10,67 +10,120 @@
 <body>
     <h2>Reddit Unhook Options</h2>
 
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Home Feed</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideHomeFeed" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
+    <div class="options-container">
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Home Feed</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideHomeFeed" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Subreddit Feed</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideSubredditFeed" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Left Sidebar</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideSideBar" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <!-- Indented sidebar sub-options -->
+        <div class="toggle-container indented sidebar-sub-option">
+            <label class="toggle-label">
+                <span>Hide Popular</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hidePopular" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <label class="toggle-label">
+                <span>Hide Explore</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideExplore" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <label class="toggle-label">
+                <span>Hide Custom Feeds</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideCustomFeeds" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <label class="toggle-label">
+                <span>Hide Recent Subreddits</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideRecentSubreddits" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <label class="toggle-label">
+                <span>Hide Communities</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideCommunities" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Comments</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideComments" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Recent Posts</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideRecentPosts" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+
+        <div class="toggle-container">
+            <label class="toggle-label">
+                <span>Hide Trending Searches</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="hideTrending" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
     </div>
 
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Subreddit Feed</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideSubredditFeed" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
-    </div>
-
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Left Sidebar</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideSideBar" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
-    </div>
-
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Comments</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideComments" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
-    </div>
-
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Recent Posts</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideRecentPosts" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
-    </div>
-
-    <div class="toggle-container">
-        <label class="toggle-label">
-            <span>Hide Trending Searches</span>
-            <div class="toggle-switch">
-                <input type="checkbox" id="hideTrending" class="toggle-input">
-                <span class="toggle-slider"></span>
-            </div>
-        </label>
-    </div>
-
-    <script type="module" src="options.js"></script>
+    <script src="options.js"></script>
 </body>
 
 </html>
