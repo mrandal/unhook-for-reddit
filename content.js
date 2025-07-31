@@ -82,8 +82,6 @@ try {
         element.style.setProperty('display', 'none', 'important');
         element.style.setProperty('visibility', 'hidden', 'important');
         element.style.setProperty('opacity', '0', 'important');
-
-
     };
 
     // Helper function to show element (works with CSS !important)
@@ -124,8 +122,16 @@ try {
         }, 10);
     };
 
-    const testContainer = document.getElementById('reddit-trending-searches-partial-container');
-    console.log('Test container query:', testContainer);
+
+    const getSearchShadowRoot = () => {
+        const search = document.querySelector('reddit-search-large');
+        return search.shadowRoot;
+    };
+
+    const getTrendingContainer = () => {
+        const searchShadowRoot = getSearchShadowRoot();
+        return searchShadowRoot.querySelector('#reddit-trending-searches-partial-container');
+    };
 
     // Function to manually test trending container detection
     const testTrendingContainer = () => {
@@ -175,6 +181,7 @@ try {
     // Function to apply visibility settings
     const applyVisibilitySettings = () => {
         const isSubredditPage = window.location.pathname.startsWith('/r');
+        const isUserPage = window.location.pathname.startsWith('/user');
 
         // Safety check - if currentSettings is empty or undefined, show all elements
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
@@ -205,20 +212,26 @@ try {
 
             // Function to recursively search through shadow DOMs
             const searchWithShadowDOM = (root, selector) => {
-                let found = [];
+                try {
+                    return Array.from(getSearchShadowRoot().querySelectorAll(selector));
+                } catch (e) {
+                    return [];
+                }
 
-                // Search in current root
-                found = found.concat(searchInRoot(root, selector));
+                // let found = [];
 
-                // Search in all shadow roots
-                const elementsWithShadow = root.querySelectorAll('*');
-                elementsWithShadow.forEach(element => {
-                    if (element.shadowRoot) {
-                        found = found.concat(searchWithShadowDOM(element.shadowRoot, selector));
-                    }
-                });
+                // // Search in current root
+                // found = found.concat(searchInRoot(root, selector));
 
-                return found;
+                // // Search in all shadow roots
+                // const elementsWithShadow = root.querySelectorAll('*');
+                // elementsWithShadow.forEach(element => {
+                //     if (element.shadowRoot) {
+                //         found = found.concat(searchWithShadowDOM(element.shadowRoot, selector));
+                //     }
+                // });
+
+                // return found;
             };
 
             // Try each selector
@@ -243,7 +256,7 @@ try {
 
         // Handle home feed
         const homeFeedElements = findElements(SELECTORS.homeFeed);
-        if (!isSubredditPage) {
+        if (!isSubredditPage && !isUserPage) {
             console.log('Processing home feed elements. hideHomeFeed setting:', currentSettings.hideHomeFeed);
             homeFeedElements.forEach(element => {
                 if (currentSettings.hideHomeFeed === true) {
@@ -792,6 +805,18 @@ try {
 
         console.log('=== END SCAN ===');
     };
+
+
+    /*
+    // Testing new shadow DOM functionality
+
+    */
+
+    const search = document.querySelector('reddit-search-large');
+    console.log(search);
+
+    const trending = search.shadowRoot.querySelector('#reddit-trending-searches-partial-container');
+    console.log(trending);
 
 
 
