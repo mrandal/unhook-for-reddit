@@ -377,10 +377,11 @@ try {
 
         // Handle home feed
         const homeFeedElements = findElements(SELECTORS.homeFeed);
-        if (!isSubredditPage && !isUserPage && !isExplorePage) {
+        if (!isSubredditPage) {
             console.log('Processing home feed elements. hideHomeFeed setting:', currentSettings.hideHomeFeed);
+            console.log('Page type - isSubredditPage:', isSubredditPage, 'isUserPage:', isUserPage, 'isExplorePage:', isExplorePage);
             homeFeedElements.forEach(element => {
-                if (currentSettings.hideHomeFeed === true) {
+                if (!isUserPage && !isExplorePage && currentSettings.hideHomeFeed === true) {
                     console.log('Hiding home feed element');
                     hideElement(element);
                 } else {
@@ -829,6 +830,8 @@ try {
                     try {
                         const url = new URL(destinationUrl, window.location.origin);
                         isDestinationSubreddit = url.pathname.startsWith('/r/');
+                        const isDestinationUserPage = url.pathname.startsWith('/user');
+                        const isDestinationExplorePage = url.pathname.startsWith('/explore');
                     } catch (e) {
                         // If URL parsing fails, fall back to current URL
                         isDestinationSubreddit = window.location.pathname.startsWith('/r');
@@ -839,12 +842,14 @@ try {
                 }
 
                 console.log('Destination is subreddit page:', isDestinationSubreddit);
+                console.log('Destination URL:', destinationUrl);
+                console.log('Current settings - hideHomeFeed:', currentSettings.hideHomeFeed, 'hideSubredditFeed:', currentSettings.hideSubredditFeed);
 
                 // Apply settings based on DESTINATION page context
                 const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
 
                 if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
-                    // Going to home page and home feed should be hidden
+                    // Going to home page (including /user pages) and home feed should be hidden
                     feedElements.forEach(el => {
                         el.style.setProperty('display', 'none', 'important');
                         el.style.setProperty('visibility', 'hidden', 'important');
