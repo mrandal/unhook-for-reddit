@@ -22,48 +22,32 @@ try {
     ];
 
     const SELECTORS = {
-        homeFeed: "shreddit-feed, [data-testid='feed'], [data-testid='home-feed'], .feed, .home-feed, [data-testid='post-container'], [data-testid='post']",
-        subredditFeed: "shreddit-feed, [data-testid='feed'], [data-testid='subreddit-feed'], .feed, .subreddit-feed, [data-testid='post-container'], [data-testid='post']",
-        comments: "shreddit-comment, [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
-        recentPosts: "recent-posts, [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
-        trending: "#reddit-trending-searches-partial-container, faceplate-tracker[data-testid='reddit-trending-result']",
-        leftSidebar: "#left-sidebar, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
-        popular: "#popular-posts, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
-        explore: "#explore-communities, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
-        customFeeds: "[id*='multireddits_section'], [data-testid='custom-feeds'], [id*='custom'], [id*='feeds'], [class*='custom-feed'], [class*='multireddit']",
-        recentSubreddits: "reddit-recent-pages, [data-testid='recent-subreddits'], [id*='recent'], [class*='recent-subreddit'], [class*='recent']",
-        communities: "[data-testid='communities'], [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
+        homeFeed: "shreddit-feed", // [data-testid='feed'], [data-testid='home-feed'], .feed, .home-feed, [data-testid='post-container'], [data-testid='post']",
+        subredditFeed: "shreddit-feed", // [data-testid='feed'], [data-testid='subreddit-feed'], .feed, .subreddit-feed, [data-testid='post-container'], [data-testid='post']",
+        comments: "shreddit-comment", // [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
+        recentPosts: "recent-posts", // [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
+        trending: "#reddit-trending-searches-partial-container", //, faceplate-tracker[data-testid='reddit-trending-result']",
+        leftSidebar: "#left-sidebar", //, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
+        popular: "#popular-posts", //, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
+        explore: "#explore-communities", //, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
+        customFeeds: "#multireddits_section", //, [data-testid='custom-feeds'], [id*='custom'], [id*='feeds'], [class*='custom-feed'], [class*='multireddit']",
+        recentSubreddits: "reddit-recent-pages", //, [data-testid='recent-subreddits'], [id*='recent'], [class*='recent-subreddit'], [class*='recent']",
+        communities: "#communities_section" //, [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
     };
 
-    // Diagnostic function to discover sidebar elements
-    const discoverSidebarElements = () => {
-
-        // Search in main document
-        const allLinks = document.querySelectorAll('a[href*="/r/popular"], a[href*="/explore"]');
-
-
-        // Search in sidebar shadow DOM
-        try {
-            const sidebarShadow = getSidebarShadowRoot();
-            const shadowLinks = sidebarShadow.querySelectorAll('a, li, div, span');
-
-            // Filter for potential popular/explore elements
-            const relevantElements = Array.from(shadowLinks).filter(el => {
-                const text = el.textContent?.toLowerCase() || '';
-                const id = el.id?.toLowerCase() || '';
-                const className = el.className?.toLowerCase() || '';
-                const href = el.href?.toLowerCase() || '';
-
-                return text.includes('popular') || text.includes('explore') ||
-                    id.includes('popular') || id.includes('explore') ||
-                    className.includes('popular') || className.includes('explore') ||
-                    href.includes('popular') || href.includes('explore');
-            });
-
-        } catch (e) {
-            console.log('Sidebar shadow DOM access failed:', e.message);
-        }
-    };
+    const DEFAULT_SETTINGS = {
+        hideHomeFeed: true,
+        hideSubredditFeed: true,
+        hideComments: false,
+        hideRecentPosts: true,
+        hideTrending: true,
+        hidePopular: true,
+        hideExplore: true,
+        hideCustomFeeds: true,
+        hideRecentSubreddits: true,
+        hideCommunities: true,
+        darkMode: false
+    }
 
     // Store current settings globally
     let currentSettings = {};
