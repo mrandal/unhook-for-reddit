@@ -396,10 +396,12 @@ try {
             const customFeedsElements = findElements(SELECTORS.customFeeds);
 
             customFeedsElements.forEach(element => {
+                // hide/show parents parent element
                 if (currentSettings.hideCustomFeeds === true) {
-                    hideElement(element);
+                    hideElement(element.parentElement.parentElement);
                 } else {
                     showElement(element);
+                    showElement(element.parentElement.parentElement);
                 }
             });
         }
@@ -423,9 +425,10 @@ try {
 
             communitiesElements.forEach(element => {
                 if (currentSettings.hideCommunities === true) {
-                    hideElement(element);
+                    hideElement(element.parentElement.parentElement);
                 } else {
                     showElement(element);
+                    showElement(element.parentElement.parentElement);
                 }
             });
         }
@@ -644,8 +647,7 @@ try {
                     // Also check for trending container specifically
                     if (node.matches && (node.matches('#reddit-trending-searches-partial-container') ||
                         node.querySelector && node.querySelector('#reddit-trending-searches-partial-container'))) {
-                        console.log('Trending container detected in DOM changes');
-                        shouldReapply = true;
+                        aggressivelyHideTrending();
                     }
                 }
             });
@@ -733,15 +735,6 @@ try {
                                     console.log('Trending container detected in search shadow root');
                                     trendingReappeared = true;
                                 }
-
-                                // Also check for any trending-related elements
-                                if (node.querySelector) {
-                                    const trendingElements = node.querySelectorAll('[id*="trending"], [class*="trending"], [data-testid*="trending"]');
-                                    if (trendingElements.length > 0) {
-                                        console.log('Trending elements detected in search shadow root');
-                                        trendingReappeared = true;
-                                    }
-                                }
                             }
                         });
                     });
@@ -749,11 +742,12 @@ try {
                     if (trendingReappeared) {
                         console.log('Trending reappeared, hiding again');
                         // Hide immediately and with delays to ensure it stays hidden
-                        [0, 10, 50, 100].forEach(delay => {
-                            setTimeout(() => {
-                                aggressivelyHideTrending();
-                            }, delay);
-                        });
+                        aggressivelyHideTrending();
+                        // [0, 10, 50, 100].forEach(delay => {
+                        //     setTimeout(() => {
+                        //         aggressivelyHideTrending();
+                        //     }, delay);
+                        // });
                     }
                 });
 
@@ -796,7 +790,7 @@ try {
         }
     };
 
-    // Set up search observer when DOM is ready
+    // // Set up search observer when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupSearchObserver);
     } else {
@@ -804,11 +798,11 @@ try {
     }
 
     // Listen for multiple event types on search inputs
-    document.addEventListener('focusin', handleSearchInteraction, true);
-    document.addEventListener('input', handleSearchInteraction, true);
-    document.addEventListener('keyup', handleSearchInteraction, true);
-    document.addEventListener('change', handleSearchInteraction, true);
-    document.addEventListener('blur', handleSearchInteraction, true);
+    // document.addEventListener('focusin', handleSearchInteraction, true);
+    // document.addEventListener('input', handleSearchInteraction, true);
+    // document.addEventListener('keyup', handleSearchInteraction, true);
+    // document.addEventListener('change', handleSearchInteraction, true);
+    // document.addEventListener('blur', handleSearchInteraction, true);
 
 
 } catch (error) {
