@@ -27,6 +27,7 @@ try {
         comments: "shreddit-comment", // [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
         recentPosts: "recent-posts", // [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
         trending: "#reddit-trending-searches-partial-container", //, faceplate-tracker[data-testid='reddit-trending-result']",
+        trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center", // Trending searches label
         leftSidebar: "#left-sidebar", //, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
         popular: "#popular-posts", //, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
         explore: "#explore-communities", //, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
@@ -361,6 +362,16 @@ try {
             }
         });
 
+        // Handle trending label
+        const trendingLabelElements = findElements(SELECTORS.trendingLabel);
+        trendingLabelElements.forEach(element => {
+            if (currentSettings.hideTrending === true) {
+                hideElement(element);
+            } else {
+                showElement(element);
+            }
+        });
+
         // Handle Popular button (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
             // Run discovery function first
@@ -649,6 +660,12 @@ try {
                         node.querySelector && node.querySelector('#reddit-trending-searches-partial-container'))) {
                         aggressivelyHideTrending();
                     }
+
+                    // Also check for trending label specifically
+                    if (node.matches && (node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
+                        node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'))) {
+                        aggressivelyHideTrending();
+                    }
                 }
             });
         });
@@ -668,48 +685,18 @@ try {
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Enhanced search input detection with multiple event types
-    const handleSearchInteraction = (event) => {
-        // More comprehensive search input detection
-        const target = event.target;
-
-        // Check if target is an element node
-        if (!target || target.nodeType !== Node.ELEMENT_NODE) {
-            return;
-        }
-
-        const isSearchInput = target && (
-            target.type === 'search' ||
-            target.getAttribute?.('role') === 'searchbox' ||
-            target.classList?.contains('search') ||
-            target.placeholder?.toLowerCase().includes('search') ||
-            target.getAttribute?.('aria-label')?.toLowerCase().includes('search') ||
-            target.id?.toLowerCase().includes('search') ||
-            target.className?.toLowerCase().includes('search')
-        );
-
-        if (isSearchInput) {
-            // Apply trending hiding immediately and with delays
-            console.log('Search input detected, hiding trending');
-            [0, 50, 100, 200].forEach(delay => {
-                setTimeout(() => {
-                    if (currentSettings.hideTrending === true) {
-                        // Find and hide trending elements
-                        const trendingElements = findElements(SELECTORS.trending);
-                        trendingElements.forEach(element => {
-                            hideElement(element);
-                        });
-                    }
-                }, delay);
-            });
-        }
-    };
-
     // Function to aggressively hide trending searches
     const aggressivelyHideTrending = () => {
         if (currentSettings.hideTrending === true) {
+            // Hide trending container
             const trendingElements = findElements(SELECTORS.trending);
             trendingElements.forEach(element => {
+                hideElement(element);
+            });
+
+            // Hide trending label
+            const trendingLabelElements = findElements(SELECTORS.trendingLabel);
+            trendingLabelElements.forEach(element => {
                 hideElement(element);
             });
         }
@@ -735,19 +722,19 @@ try {
                                     console.log('Trending container detected in search shadow root');
                                     trendingReappeared = true;
                                 }
+
+                                // Check if the trending label was added
+                                if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
+                                    node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
+                                    console.log('Trending label detected in search shadow root');
+                                    trendingReappeared = true;
+                                }
                             }
                         });
                     });
 
                     if (trendingReappeared) {
-                        console.log('Trending reappeared, hiding again');
-                        // Hide immediately and with delays to ensure it stays hidden
                         aggressivelyHideTrending();
-                        // [0, 10, 50, 100].forEach(delay => {
-                        //     setTimeout(() => {
-                        //         aggressivelyHideTrending();
-                        //     }, delay);
-                        // });
                     }
                 });
 
