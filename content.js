@@ -380,10 +380,9 @@ try {
         // Handle Popular button (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
             // Run discovery function first
-            discoverSidebarElements();
+            // discoverSidebarElements();
 
             const popularElements = findElements(SELECTORS.popular);
-            console.log('Found popular elements:', popularElements.length);
 
             popularElements.forEach(element => {
                 if (currentSettings.hidePopular === true) {
@@ -706,7 +705,7 @@ try {
         if (isSearchInput) {
             // Apply trending hiding immediately and with delays
             console.log('Search input detected, hiding trending');
-            [0, 50].forEach(delay => {
+            [0, 50, 100, 200].forEach(delay => {
                 setTimeout(() => {
                     if (currentSettings.hideTrending === true) {
                         // Find and hide trending elements
@@ -720,11 +719,112 @@ try {
         }
     };
 
+    // Function to aggressively hide trending searches
+    const aggressivelyHideTrending = () => {
+        if (currentSettings.hideTrending === true) {
+            const trendingElements = findElements(SELECTORS.trending);
+            trendingElements.forEach(element => {
+                hideElement(element);
+            });
+        }
+    };
+
+    // Function to set up search shadow root observer
+    const setupSearchShadowObserver = () => {
+        try {
+            const searchElement = document.querySelector('reddit-search-large');
+            if (searchElement && searchElement.shadowRoot) {
+                const searchShadowRoot = searchElement.shadowRoot;
+
+                // Create observer for the search shadow root
+                const searchObserver = new MutationObserver((mutations) => {
+                    let trendingReappeared = false;
+
+                    mutations.forEach((mutation) => {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                // Check if the trending container was added
+                                if (node.id === 'reddit-trending-searches-partial-container' ||
+                                    node.querySelector?.('#reddit-trending-searches-partial-container')) {
+                                    console.log('Trending container detected in search shadow root');
+                                    trendingReappeared = true;
+                                }
+
+                                // Also check for any trending-related elements
+                                if (node.querySelector) {
+                                    const trendingElements = node.querySelectorAll('[id*="trending"], [class*="trending"], [data-testid*="trending"]');
+                                    if (trendingElements.length > 0) {
+                                        console.log('Trending elements detected in search shadow root');
+                                        trendingReappeared = true;
+                                    }
+                                }
+                            }
+                        });
+                    });
+
+                    if (trendingReappeared) {
+                        console.log('Trending reappeared, hiding again');
+                        // Hide immediately and with delays to ensure it stays hidden
+                        [0, 10, 50, 100].forEach(delay => {
+                            setTimeout(() => {
+                                aggressivelyHideTrending();
+                            }, delay);
+                        });
+                    }
+                });
+
+                // Start observing the search shadow root
+                searchObserver.observe(searchShadowRoot, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['style', 'class', 'hidden']
+                });
+
+                console.log('Search shadow root observer set up');
+                return searchObserver;
+            }
+        } catch (error) {
+            console.log('Failed to set up search shadow root observer:', error.message);
+        }
+        return null;
+    };
+
+    // Function to periodically check for search shadow root and set up observer
+    const setupSearchObserver = () => {
+        // Try to set up observer immediately
+        let searchObserver = setupSearchShadowObserver();
+
+        // If not found immediately, try periodically
+        if (!searchObserver) {
+            const checkInterval = setInterval(() => {
+                searchObserver = setupSearchShadowObserver();
+                if (searchObserver) {
+                    clearInterval(checkInterval);
+                    console.log('Search shadow root observer set up after retry');
+                }
+            }, 1000);
+
+            // Stop trying after 10 seconds
+            setTimeout(() => {
+                clearInterval(checkInterval);
+            }, 10000);
+        }
+    };
+
+    // Set up search observer when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupSearchObserver);
+    } else {
+        setupSearchObserver();
+    }
+
     // Listen for multiple event types on search inputs
     document.addEventListener('focusin', handleSearchInteraction, true);
-    // document.addEventListener('focus', handleSearchInteraction, true);
-    // document.addEventListener('click', handleSearchInteraction, true);
     document.addEventListener('input', handleSearchInteraction, true);
+    document.addEventListener('keyup', handleSearchInteraction, true);
+    document.addEventListener('change', handleSearchInteraction, true);
+    document.addEventListener('blur', handleSearchInteraction, true);
 
 
 } catch (error) {
