@@ -1,27 +1,12 @@
-# Unhook Reddit - Firefox Extension
+# Unhook for Reddit - Firefox Extension
 
 A Firefox extension that helps you focus on Reddit by hiding distracting elements like feeds, sidebars, trending searches, and more.
-
-## Features
-
-- **Hide Home Feed**: Remove the main feed from Reddit's home page
-- **Hide Subreddit Feed**: Remove posts from subreddit pages
-- **Hide Left Sidebar**: Remove the entire left navigation sidebar
-- **Hide Popular**: Hide the "Popular" button and redirect from `/r/popular` to home
-- **Hide Explore**: Hide the "Explore" button and redirect from `/explore` to home
-- **Hide Custom Feeds**: Hide custom feed sections
-- **Hide Recent Subreddits**: Hide recently visited subreddits
-- **Hide Communities**: Hide community sections
-- **Hide Comments**: Remove comment sections from posts
-- **Hide Recent Posts**: Hide recent/top posts sections
-- **Hide Trending Searches**: Remove trending searches from the search bar
-- **Dark Mode**: Toggle between light and dark themes for the options UI
 
 ## Installation
 
 ### From Firefox Add-ons Store (Recommended)
 1. Visit the Firefox Add-ons store
-2. Search for "Unhook Reddit"
+2. Search for "Unhook for Reddit"
 3. Click "Add to Firefox"
 
 ### Manual Installation (Developer Mode)
@@ -84,10 +69,6 @@ unhook-reddit-fox/
 - **Navigation Handling**: Prevents flickering during page navigation
 - **Settings Persistence**: Uses browser.storage.sync for cross-device sync
 
-## Contributing
-
-Found a bug or have a feature request? Please use our [feedback form](https://forms.gle/wB7BN8a7Be9aJTRq7).
-
 ## License
 
 This project is open source and available under the MIT License.
@@ -102,4 +83,4 @@ This extension:
 
 ## Support
 
-If you need help or want to report issues, please use our [feedback form](https://forms.gle/wB7BN8a7Be9aJTRq7).
+If you want to report issues or suggest features, please use our [feedback form](https://forms.gle/wB7BN8a7Be9aJTRq7).

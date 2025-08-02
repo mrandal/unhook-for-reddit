@@ -1,5 +1,5 @@
 {
-  "name": "Unhook Reddit",
+  "name": "Unhook for Reddit",
   "description": "Remove distracting elements from Reddit to help you focus on what matters",
   "version": "1.0.0",
   "manifest_version": 3,
@@ -27,7 +27,7 @@
   ],
   "action": {
     "default_popup": "options.html",
-    "default_title": "Unhook Reddit"
+    "default_title": "Unhook for Reddit"
   },
   "browser_specific_settings": {
     "gecko": {
@@ -42,6 +42,6 @@
     "256": "assets/unhook-reddit-256.png",
     "512": "assets/unhook-reddit-512.png"
   },
-  "author": "Unhook Reddit Team",
-  "homepage_url": "https://github.com/your-username/unhook-reddit-fox"
+  "author": "Mathew Randal",
+  "homepage_url": "https://github.com/mrandal/unhook-for-reddit"
 }
