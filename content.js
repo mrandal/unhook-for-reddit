@@ -36,20 +36,6 @@ try {
         communities: "#communities_section" //, [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
     };
 
-    const DEFAULT_SETTINGS = {
-        hideHomeFeed: true,
-        hideSubredditFeed: true,
-        hideComments: false,
-        hideRecentPosts: true,
-        hideTrending: true,
-        hidePopular: true,
-        hideExplore: true,
-        hideCustomFeeds: true,
-        hideRecentSubreddits: true,
-        hideCommunities: true,
-        darkMode: false
-    }
-
     // Store current settings globally
     let currentSettings = {};
 
@@ -190,13 +176,13 @@ try {
         element.style.setProperty('opacity', '1', 'important');
 
         // Add a small delay to check if it worked
-        setTimeout(() => {
-            const computedDisplay = window.getComputedStyle(element).display;
-            // If it's still hidden, try even more aggressive approach
-            if (computedDisplay === 'none') {
-                element.style.cssText += `display: ${displayValue} !important; visibility: visible !important; opacity: 1 !important;`;
-            }
-        }, 10);
+        // setTimeout(() => {
+        //     const computedDisplay = window.getComputedStyle(element).display;
+        //     // If it's still hidden, try even more aggressive approach
+        //     if (computedDisplay === 'none') {
+        //         element.style.cssText += `display: ${displayValue} !important; visibility: visible !important; opacity: 1 !important;`;
+        //     }
+        // }, 10);
     };
 
 
@@ -221,7 +207,6 @@ try {
         const selectors = selectorString.split(', ').map(s => s.trim());
         let elements = [];
 
-        // Function to search within a root (document or shadow root)
         const searchInRoot = (root, selector) => {
             try {
                 return Array.from(root.querySelectorAll(selector));
@@ -230,11 +215,9 @@ try {
             }
         };
 
-        // Function to recursively search through shadow DOMs
         const searchWithShadowDOM = (root, selector) => {
             let found = [];
 
-            // Try all known shadow roots
             const shadowRootGetters = [
                 () => getSearchShadowRoot(),
                 () => getSidebarShadowRoot(),
@@ -251,7 +234,6 @@ try {
                         }
                     }
                 } catch (e) {
-                    // Continue to next shadow root if this one fails
                     console.log(`Shadow root access failed for selector "${selector}":`, e.message);
                 }
             }
@@ -261,14 +243,12 @@ try {
 
         // Try each selector
         for (const selector of selectors) {
-            // First try normal document search
             const normalFound = searchInRoot(document, selector);
             if (normalFound.length > 0) {
                 elements = normalFound;
                 break;
             }
 
-            // If not found, search through shadow DOMs
             const shadowFound = searchWithShadowDOM(document, selector);
             if (shadowFound.length > 0) {
                 elements = shadowFound;
@@ -296,8 +276,6 @@ try {
             return;
         }
 
-
-        // Handle home feed
         const homeFeedElements = findElements(SELECTORS.homeFeed);
         if (!isSubredditPage) {
             homeFeedElements.forEach(element => {
@@ -309,7 +287,6 @@ try {
             });
         }
 
-        // Handle subreddit feed
         const subredditFeedElements = findElements(SELECTORS.subredditFeed);
         if (isSubredditPage) {
             subredditFeedElements.forEach(element => {
@@ -322,7 +299,6 @@ try {
         }
 
         const commentElements = findElements(SELECTORS.comments);
-
         commentElements.forEach(element => {
             if (currentSettings.hideComments === true) {
                 hideElement(element);
@@ -332,7 +308,6 @@ try {
         });
 
         const leftSidebarElements = findElements(SELECTORS.leftSidebar);
-
         leftSidebarElements.forEach((element, index) => {
 
             if (currentSettings.hideSideBar === true) {
@@ -343,7 +318,6 @@ try {
         });
 
         const recentPostElements = findElements(SELECTORS.recentPosts);
-
         recentPostElements.forEach(element => {
             if (currentSettings.hideRecentPosts === true) {
                 hideElement(element);
@@ -352,7 +326,6 @@ try {
             }
         });
 
-        // Handle trending container
         const trendingElements = findElements(SELECTORS.trending);
         trendingElements.forEach(element => {
             if (currentSettings.hideTrending === true) {
@@ -362,7 +335,6 @@ try {
             }
         });
 
-        // Handle trending label
         const trendingLabelElements = findElements(SELECTORS.trendingLabel);
         trendingLabelElements.forEach(element => {
             if (currentSettings.hideTrending === true) {
@@ -372,13 +344,8 @@ try {
             }
         });
 
-        // Handle Popular button (only when not on sidebar hidden mode)
         if (!currentSettings.hideSideBar) {
-            // Run discovery function first
-            // discoverSidebarElements();
-
             const popularElements = findElements(SELECTORS.popular);
-
             popularElements.forEach(element => {
                 if (currentSettings.hidePopular === true) {
                     hideElement(element);
@@ -386,13 +353,8 @@ try {
                     showElement(element);
                 }
             });
-        }
-
-        // Handle Explore button (only when not on sidebar hidden mode)
-        if (!currentSettings.hideSideBar) {
 
             const exploreElements = findElements(SELECTORS.explore);
-
             exploreElements.forEach(element => {
                 if (currentSettings.hideExplore === true) {
                     hideElement(element);
@@ -400,14 +362,9 @@ try {
                     showElement(element);
                 }
             });
-        }
 
-        // Handle Custom Feeds (only when not on sidebar hidden mode)
-        if (!currentSettings.hideSideBar) {
             const customFeedsElements = findElements(SELECTORS.customFeeds);
-
             customFeedsElements.forEach(element => {
-                // hide/show parents parent element
                 if (currentSettings.hideCustomFeeds === true) {
                     hideElement(element.parentElement.parentElement);
                 } else {
@@ -415,12 +372,8 @@ try {
                     showElement(element.parentElement.parentElement);
                 }
             });
-        }
 
-        // Handle Recent Subreddits (only when not on sidebar hidden mode)
-        if (!currentSettings.hideSideBar) {
             const recentSubredditsElements = findElements(SELECTORS.recentSubreddits);
-
             recentSubredditsElements.forEach(element => {
                 if (currentSettings.hideRecentSubreddits === true) {
                     hideElement(element);
@@ -428,12 +381,8 @@ try {
                     showElement(element);
                 }
             });
-        }
 
-        // Handle Communities (only when not on sidebar hidden mode)
-        if (!currentSettings.hideSideBar) {
             const communitiesElements = findElements(SELECTORS.communities);
-
             communitiesElements.forEach(element => {
                 if (currentSettings.hideCommunities === true) {
                     hideElement(element.parentElement.parentElement);
@@ -473,12 +422,12 @@ try {
             }).catch((error) => {
                 // Fall back to default settings
                 currentSettings = {
-                    hideHomeFeed: true,
+                    hideHomeFeed: false,
                     hideSubredditFeed: false,
-                    hideSideBar: true,
+                    hideSideBar: false,
                     hideComments: false,
                     hideRecentPosts: false,
-                    hideTrending: true,
+                    hideTrending: false,
                     hidePopular: false,
                     hideExplore: false,
                     hideCustomFeeds: false,
@@ -490,12 +439,12 @@ try {
             });
         } catch (error) {
             currentSettings = {
-                hideHomeFeed: true,
+                hideHomeFeed: false,
                 hideSubredditFeed: false,
-                hideSideBar: true,
+                hideSideBar: false,
                 hideComments: false,
                 hideRecentPosts: false,
-                hideTrending: true,
+                hideTrending: false,
                 hidePopular: false,
                 hideExplore: false,
                 hideCustomFeeds: false,
@@ -783,14 +732,6 @@ try {
     } else {
         setupSearchObserver();
     }
-
-    // Listen for multiple event types on search inputs
-    // document.addEventListener('focusin', handleSearchInteraction, true);
-    // document.addEventListener('input', handleSearchInteraction, true);
-    // document.addEventListener('keyup', handleSearchInteraction, true);
-    // document.addEventListener('change', handleSearchInteraction, true);
-    // document.addEventListener('blur', handleSearchInteraction, true);
-
 
 } catch (error) {
     console.error('Content script error:', error);
