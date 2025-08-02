@@ -212,8 +212,8 @@ body.dark-mode .dark-mode-toggle .toggle-label span {
 
 /* Feedback section styling */
 .feedback-section {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 0px;
+    padding: 10px;
     text-align: center;
     border-top: 1px solid #e0e0e0;
 }

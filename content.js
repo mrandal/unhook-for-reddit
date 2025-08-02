@@ -1,6 +1,4 @@
 try {
-
-    // Ensure browser API is available
     if (typeof browser === "undefined") {
         var browser = chrome;
     }
@@ -39,10 +37,8 @@ try {
     // Store current settings globally
     let currentSettings = {};
 
-    // Store original display values to restore them properly
     let originalDisplayValues = new Map();
 
-    // Define redirect mappings for better maintainability
     const REDIRECT_MAPPINGS = [
         {
             check: (path) => path.startsWith('/r/popular'),
@@ -91,7 +87,6 @@ try {
         }
     };
 
-    // Run redirect check immediately (before DOM is ready)
     checkPageRedirects();
 
     // Helper function to store original display value
@@ -401,7 +396,6 @@ try {
         // Try to get settings synchronously if possible
         try {
             browser.storage.sync.get(STORAGE_KEYS).then((data) => {
-                // Initialize settings properly - ensure they're boolean values
                 currentSettings = {
                     hideHomeFeed: data.hideHomeFeed === true,
                     hideSubredditFeed: data.hideSubredditFeed === true,
@@ -417,24 +411,6 @@ try {
                     darkMode: data.darkMode === true
                 };
 
-                // Apply settings immediately after loading
-                applyVisibilitySettings();
-            }).catch((error) => {
-                // Fall back to default settings
-                currentSettings = {
-                    hideHomeFeed: false,
-                    hideSubredditFeed: false,
-                    hideSideBar: false,
-                    hideComments: false,
-                    hideRecentPosts: false,
-                    hideTrending: false,
-                    hidePopular: false,
-                    hideExplore: false,
-                    hideCustomFeeds: false,
-                    hideRecentSubreddits: false,
-                    hideCommunities: false,
-                    darkMode: false
-                };
                 applyVisibilitySettings();
             });
         } catch (error) {
@@ -471,7 +447,6 @@ try {
     // Load and apply settings immediately on script load
     loadAndApplyImmediateSettings();
 
-    // Also apply settings very early if document is still loading
     if (document.readyState === 'loading') {
         // Apply settings again when DOM content is loaded
         document.addEventListener('DOMContentLoaded', () => {
@@ -496,17 +471,15 @@ try {
                     try {
                         const url = new URL(destinationUrl, window.location.origin);
                         isDestinationSubreddit = url.pathname.startsWith('/r/');
-                        const isDestinationUserPage = url.pathname.startsWith('/user');
-                        const isDestinationExplorePage = url.pathname.startsWith('/explore');
+                        // const isDestinationUserPage = url.pathname.startsWith('/user');
+                        // const isDestinationExplorePage = url.pathname.startsWith('/explore');
                     } catch (e) {
-                        // If URL parsing fails, fall back to current URL
                         isDestinationSubreddit = window.location.pathname.startsWith('/r');
                     }
                 } else {
                     // Fallback to current URL (for back/forward navigation)
                     isDestinationSubreddit = window.location.pathname.startsWith('/r');
                 }
-                // Apply settings based on DESTINATION page context
                 const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
 
                 if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
@@ -541,7 +514,6 @@ try {
             currentUrl = newUrl;
             isNavigating = false;
 
-            // Check for page redirects after navigation
             checkPageRedirects();
 
             // Immediately apply settings for the new page context
@@ -620,7 +592,6 @@ try {
         });
 
         if (shouldReapply) {
-            console.log('New elements detected, reapplying settings');
             applyVisibilitySettings();
         }
     });
@@ -634,16 +605,13 @@ try {
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Function to aggressively hide trending searches
     const aggressivelyHideTrending = () => {
         if (currentSettings.hideTrending === true) {
-            // Hide trending container
             const trendingElements = findElements(SELECTORS.trending);
             trendingElements.forEach(element => {
                 hideElement(element);
             });
 
-            // Hide trending label
             const trendingLabelElements = findElements(SELECTORS.trendingLabel);
             trendingLabelElements.forEach(element => {
                 hideElement(element);
@@ -651,7 +619,6 @@ try {
         }
     };
 
-    // Function to set up search shadow root observer
     const setupSearchShadowObserver = () => {
         try {
             const searchElement = document.querySelector('reddit-search-large');
@@ -668,14 +635,12 @@ try {
                                 // Check if the trending container was added
                                 if (node.id === 'reddit-trending-searches-partial-container' ||
                                     node.querySelector?.('#reddit-trending-searches-partial-container')) {
-                                    console.log('Trending container detected in search shadow root');
                                     trendingReappeared = true;
                                 }
 
                                 // Check if the trending label was added
                                 if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
                                     node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
-                                    console.log('Trending label detected in search shadow root');
                                     trendingReappeared = true;
                                 }
                             }
@@ -695,7 +660,6 @@ try {
                     attributeFilter: ['style', 'class', 'hidden']
                 });
 
-                console.log('Search shadow root observer set up');
                 return searchObserver;
             }
         } catch (error) {
@@ -706,16 +670,13 @@ try {
 
     // Function to periodically check for search shadow root and set up observer
     const setupSearchObserver = () => {
-        // Try to set up observer immediately
         let searchObserver = setupSearchShadowObserver();
 
-        // If not found immediately, try periodically
         if (!searchObserver) {
             const checkInterval = setInterval(() => {
                 searchObserver = setupSearchShadowObserver();
                 if (searchObserver) {
                     clearInterval(checkInterval);
-                    console.log('Search shadow root observer set up after retry');
                 }
             }, 1000);
 
@@ -726,7 +687,6 @@ try {
         }
     };
 
-    // // Set up search observer when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupSearchObserver);
     } else {
