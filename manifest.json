@@ -4,8 +4,7 @@
   "version": "1.0.0",
   "manifest_version": 3,
   "permissions": [
-    "storage",
-    "activeTab"
+    "storage"
   ],
   "host_permissions": [
     "*://www.reddit.com/*"
