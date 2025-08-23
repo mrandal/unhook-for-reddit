@@ -230,7 +230,7 @@ try {
                         }
                     }
                 } catch (e) {
-                    console.log(`Shadow root access failed for selector "${selector}":`, e.message);
+                    // console.log(`Shadow root access failed for selector "${selector}":`, e.message);
                 }
             }
 
@@ -704,7 +704,7 @@ try {
 
             return searchObserver;
         } catch (error) {
-            console.log('Failed to set up search shadow root observer for specific root:', error.message);
+            // console.log('Failed to set up search shadow root observer for specific root:', error.message);
         }
         return null;
     };
@@ -753,7 +753,7 @@ try {
                 return searchObserver;
             }
         } catch (error) {
-            console.log('Failed to set up search shadow root observer:', error.message);
+            // console.log('Failed to set up search shadow root observer:', error.message);
         }
         return null;
     };
@@ -763,7 +763,7 @@ try {
     const originalAttachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = function (options) {
         const shadowRoot = originalAttachShadow.call(this, options);
-
+        console.log('ATTACHED SHADOW ROOT:', shadowRoot);
         // Check if this is a search-related element
         if (this.tagName === 'REDDIT-SEARCH-LARGE' ||
             this.tagName === 'REDDIT-SEARCH' ||
