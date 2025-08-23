@@ -227,30 +227,53 @@ const handleLockButtonClick = async (button, settingId) => {
     const isLocked = button.classList.contains('state-locked');
 
     if (isLocked) {
-        return; // Already locked, do nothing
-    }
-
-    if (!isEnabled) {
-        alert('You can only lock a setting when it is enabled (toggled on).');
+        // Already locked, do nothing
         return;
     }
 
-    const confirmMessage = `Are you sure you want to PERMANENTLY LOCK the "${settingId}" setting?\n\n⚠️  WARNING: Once locked, this setting cannot be changed unless you reinstall the extension.\n\nThis action is irreversible.`;
+    if (!isEnabled) {
+        // Try to show alert, but don't block functionality if it fails
+        try {
+            alert('You can only lock a setting when it is enabled (toggled on).');
+        } catch (e) {
+            console.log('Alert blocked by browser, continuing with functionality');
+        }
+        return;
+    }
 
-    if (confirm(confirmMessage)) {
-        // Lock the setting
-        const lockKey = `lock_${settingId}`;
-        await browser.storage.sync.set({ [lockKey]: true });
+    // Try to show confirmation dialog
+    let shouldLock = false;
+    try {
+        const confirmMessage = `Are you sure you want to PERMANENTLY LOCK the "${settingId}" setting?\n\n⚠️  WARNING: Once locked, this setting cannot be changed unless you reinstall the extension.\n\nThis action is irreversible.`;
+        if (!confirmMessage || confirmMessage.closed || typeof confirmMessage.closed === "undefined") {
+            throw new Error("Confirm message is not defined");
+        }
+        shouldLock = confirm(confirmMessage);
+    } catch (e) {
+        console.log('Confirm dialog blocked by browser, proceeding with lock');
+        // If confirm is blocked, proceed with locking the setting
+        shouldLock = true;
+    }
 
-        // Update UI
-        updateLockButtonState(button, settingId, true, true);
+    if (shouldLock) {
+        try {
+            // Lock the setting
+            const lockKey = `lock_${settingId}`;
+            await browser.storage.sync.set({ [lockKey]: true });
 
-        // Disable the toggle
-        const toggle = document.getElementById(settingId);
-        toggle.disabled = true;
-        toggle.checked = true;
+            // Update UI
+            updateLockButtonState(button, settingId, true, true);
 
-        console.log(`Setting ${settingId} has been permanently locked`);
+            // Disable the toggle
+            const toggle = document.getElementById(settingId);
+            toggle.disabled = true;
+            toggle.checked = true;
+
+            console.log(`Setting ${settingId} has been permanently locked`);
+        } catch (error) {
+            console.error('Failed to lock setting:', error);
+            // If locking fails, allow the setting to continue working normally
+        }
     }
 };
 
