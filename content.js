@@ -346,10 +346,11 @@ try {
                 // Remove border classes to hide the horizontal line
                 element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
                 // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
-                element.classList.remove('unhook-reddit-visible');
+                // Don't remove unhook-reddit-visible class - let CSS handle the border removal
             } else {
                 // Restore the original border classes
                 element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                // Ensure the visible class is present for proper CSS targeting
                 element.classList.add('unhook-reddit-visible');
             }
         });
@@ -632,14 +633,80 @@ try {
                 hideElement(element);
             });
 
-            // Handle trending container border classes
-            const trendingContainerElements = findElements(SELECTORS.trendingContainer);
+            // Handle trending container border classes - use a more flexible selector
+            const trendingContainerSelectors = [
+                "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
+                "div[class*='border-b-sm']",
+                "div[class*='border-neutral-border']"
+            ];
+
+            let trendingContainerElements = [];
+            for (const selector of trendingContainerSelectors) {
+                trendingContainerElements = findElements(selector);
+                if (trendingContainerElements.length > 0) break;
+            }
+
             trendingContainerElements.forEach(element => {
                 // Remove border classes to hide the horizontal line
                 element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
                 // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
+                // Ensure the visible class is present for proper CSS targeting
+                element.classList.add('unhook-reddit-visible');
             });
         }
+    };
+
+    const setupSearchShadowObserverForRoot = (shadowRoot) => {
+        try {
+            // Create observer for the specific shadow root
+            const searchObserver = new MutationObserver((mutations) => {
+                let trendingReappeared = false;
+
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // Check if the trending container was added
+                            if (node.id === 'reddit-trending-searches-partial-container' ||
+                                node.querySelector?.('#reddit-trending-searches-partial-container')) {
+                                trendingReappeared = true;
+                            }
+
+                            // Check if the trending label was added
+                            if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
+                                node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
+                                trendingReappeared = true;
+                            }
+
+                            // Check if the trending container div was added
+                            if (node.matches && node.matches('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border') ||
+                                node.querySelector && node.querySelector('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border')) {
+                                trendingReappeared = true;
+                            }
+                        }
+                    });
+                });
+
+                if (trendingReappeared) {
+                    // Small delay to ensure elements are fully rendered
+                    setTimeout(() => {
+                        aggressivelyHideTrending();
+                    }, 50);
+                }
+            });
+
+            // Start observing the shadow root
+            searchObserver.observe(shadowRoot, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['style', 'class', 'hidden']
+            });
+
+            return searchObserver;
+        } catch (error) {
+            console.log('Failed to set up search shadow root observer for specific root:', error.message);
+        }
+        return null;
     };
 
     const setupSearchShadowObserver = () => {
@@ -692,6 +759,26 @@ try {
     };
 
     // Function to periodically check for search shadow root and set up observer
+    // Monkey-patch attachShadow to detect new shadow DOM creation
+    const originalAttachShadow = Element.prototype.attachShadow;
+    Element.prototype.attachShadow = function (options) {
+        const shadowRoot = originalAttachShadow.call(this, options);
+
+        // Check if this is a search-related element
+        if (this.tagName === 'REDDIT-SEARCH-LARGE' ||
+            this.tagName === 'REDDIT-SEARCH' ||
+            this.classList.contains('search') ||
+            this.getAttribute('data-testid')?.includes('search')) {
+
+            // Set up observer for this specific shadow root
+            setTimeout(() => {
+                setupSearchShadowObserverForRoot(shadowRoot);
+            }, 100);
+        }
+
+        return shadowRoot;
+    };
+
     const setupSearchObserver = () => {
         let searchObserver = setupSearchShadowObserver();
 
@@ -710,10 +797,24 @@ try {
         }
     };
 
+    // Function to check for existing search shadow roots and set up observers
+    const checkExistingSearchShadowRoots = () => {
+        const searchElements = document.querySelectorAll('reddit-search-large, reddit-search, [data-testid*="search"]');
+        searchElements.forEach(element => {
+            if (element.shadowRoot) {
+                setupSearchShadowObserverForRoot(element.shadowRoot);
+            }
+        });
+    };
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupSearchObserver);
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSearchObserver();
+            checkExistingSearchShadowRoots();
+        });
     } else {
         setupSearchObserver();
+        checkExistingSearchShadowRoots();
     }
 
 } catch (error) {

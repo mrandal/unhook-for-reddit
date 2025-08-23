@@ -142,3 +142,11 @@ faceplate-tracker[data-testid="reddit-trending-result"]:not(.unhook-reddit-visib
   visibility: hidden !important;
   opacity: 0 !important;
 }
+
+/* Remove border from trending container when trending searches are hidden */
+div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border:not(.unhook-reddit-visible) {
+  border-bottom: none !important;
+  border-bottom-width: 0 !important;
+  border-bottom-style: none !important;
+  border-bottom-color: transparent !important;
+}
