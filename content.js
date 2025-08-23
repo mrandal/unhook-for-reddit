@@ -26,6 +26,7 @@ try {
         recentPosts: "recent-posts", // [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
         trending: "#reddit-trending-searches-partial-container", //, faceplate-tracker[data-testid='reddit-trending-result']",
         trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center", // Trending searches label
+        trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border", // Trending container with border
         leftSidebar: "#left-sidebar", //, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
         popular: "#popular-posts", //, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
         explore: "#explore-communities", //, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
@@ -339,6 +340,20 @@ try {
             }
         });
 
+        const trendingContainerElements = findElements(SELECTORS.trendingContainer);
+        trendingContainerElements.forEach(element => {
+            if (currentSettings.hideTrending === true) {
+                // Remove border classes to hide the horizontal line
+                element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
+                element.classList.remove('unhook-reddit-visible');
+            } else {
+                // Restore the original border classes
+                element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                element.classList.add('unhook-reddit-visible');
+            }
+        });
+
         if (!currentSettings.hideSideBar) {
             const popularElements = findElements(SELECTORS.popular);
             popularElements.forEach(element => {
@@ -615,6 +630,14 @@ try {
             const trendingLabelElements = findElements(SELECTORS.trendingLabel);
             trendingLabelElements.forEach(element => {
                 hideElement(element);
+            });
+
+            // Handle trending container border classes
+            const trendingContainerElements = findElements(SELECTORS.trendingContainer);
+            trendingContainerElements.forEach(element => {
+                // Remove border classes to hide the horizontal line
+                element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
             });
         }
     };
