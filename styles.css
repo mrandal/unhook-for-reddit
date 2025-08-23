@@ -332,8 +332,20 @@ body.dark-mode .dark-mode-toggle .toggle-label span {
 .feedback-section {
     margin-top: 0px;
     padding: 10px;
-    text-align: center;
     border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feedback-left {
+    flex: 1;
+    text-align: left;
+}
+
+.feedback-right {
+    flex-shrink: 0;
+    margin-left: 15px;
 }
 
 .feedback-link {
@@ -361,6 +373,35 @@ body.dark-mode .dark-mode-toggle .toggle-label span {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: #24292e;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.github-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: #2f363d;
+}
+
+.github-link:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.github-icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+}
+
 /* Dark mode feedback section */
 body.dark-mode .feedback-section {
     border-top: 1px solid #404040;
@@ -372,5 +413,15 @@ body.dark-mode .feedback-link {
 }
 
 body.dark-mode .feedback-link:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .github-link {
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .github-link:hover {
+    background: #2d2d2d;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
