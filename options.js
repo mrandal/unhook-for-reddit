@@ -49,6 +49,25 @@ const OPTION_IDS = {
     darkMode: "darkMode"
 };
 
+// Function to get user-friendly setting names
+const getSettingDisplayName = (settingId) => {
+    const displayNames = {
+        hideHomeFeed: "Hide Home Feed",
+        hideSubredditFeed: "Hide Subreddit Feed",
+        hideSideBar: "Hide Left Sidebar",
+        hideComments: "Hide Comments",
+        hideRecentPosts: "Hide Recent Posts",
+        hideTrending: "Hide Trending Searches",
+        hidePopular: "Hide Popular",
+        hideExplore: "Hide Explore",
+        hideCustomFeeds: "Hide Custom Feeds",
+        hideRecentSubreddits: "Hide Recent Subreddits",
+        hideCommunities: "Hide Communities"
+    };
+
+    return displayNames[settingId] || settingId;
+};
+
 const darkMode = document.getElementById(OPTION_IDS.darkMode);
 const hideHomeFeed = document.getElementById(OPTION_IDS.hideHomeFeed);
 const hideSubredditFeed = document.getElementById(OPTION_IDS.hideSubredditFeed);
@@ -241,39 +260,85 @@ const handleLockButtonClick = async (button, settingId) => {
         return;
     }
 
-    // Try to show confirmation dialog
-    let shouldLock = false;
+    // Show custom confirmation modal
+    showConfirmModal(settingId, button);
+};
+
+// Custom confirmation modal functions
+const showConfirmModal = (settingId, lockButton) => {
+    const modal = document.getElementById('confirmModal');
+    const settingNameSpan = document.getElementById('confirmSettingName');
+
+    // Set the user-friendly setting name in the modal
+    settingNameSpan.textContent = getSettingDisplayName(settingId);
+
+    // Show the modal
+    modal.classList.add('show');
+
+    // Store the lock button reference for later use
+    modal.dataset.lockButton = lockButton.dataset.setting;
+
+    // Add event listeners for the modal buttons
+    const cancelBtn = document.getElementById('cancelLockBtn');
+    const confirmBtn = document.getElementById('confirmLockBtn');
+
+    // Remove existing listeners to prevent duplicates
+    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+
+    // Get fresh references after cloning
+    const newCancelBtn = document.getElementById('cancelLockBtn');
+    const newConfirmBtn = document.getElementById('confirmLockBtn');
+
+    // Add new event listeners
+    newCancelBtn.addEventListener('click', () => hideConfirmModal());
+    newConfirmBtn.addEventListener('click', () => confirmLockAction(modal));
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            hideConfirmModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            hideConfirmModal();
+        }
+    });
+};
+
+const hideConfirmModal = () => {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.remove('show');
+};
+
+const confirmLockAction = async (modal) => {
+    const settingId = modal.dataset.lockButton;
+    const lockButton = document.querySelector(`[data-setting="${settingId}"]`);
+
     try {
-        const confirmMessage = `Are you sure you want to PERMANENTLY LOCK the "${settingId}" setting?\n\n⚠️  WARNING: Once locked, this setting cannot be changed unless you reinstall the extension.\n\nThis action is irreversible.`;
-        if (!confirmMessage || confirmMessage.closed || typeof confirmMessage.closed === "undefined") {
-            throw new Error("Confirm message is not defined");
-        }
-        shouldLock = confirm(confirmMessage);
-    } catch (e) {
-        console.log('Confirm dialog blocked by browser, proceeding with lock');
-        // If confirm is blocked, proceed with locking the setting
-        shouldLock = true;
-    }
+        // Lock the setting
+        const lockKey = `lock_${settingId}`;
+        await browser.storage.sync.set({ [lockKey]: true });
 
-    if (shouldLock) {
-        try {
-            // Lock the setting
-            const lockKey = `lock_${settingId}`;
-            await browser.storage.sync.set({ [lockKey]: true });
+        // Update UI
+        updateLockButtonState(lockButton, settingId, true, true);
 
-            // Update UI
-            updateLockButtonState(button, settingId, true, true);
+        // Disable the toggle
+        const toggle = document.getElementById(settingId);
+        toggle.disabled = true;
+        toggle.checked = true;
 
-            // Disable the toggle
-            const toggle = document.getElementById(settingId);
-            toggle.disabled = true;
-            toggle.checked = true;
+        console.log(`Setting ${settingId} has been permanently locked`);
 
-            console.log(`Setting ${settingId} has been permanently locked`);
-        } catch (error) {
-            console.error('Failed to lock setting:', error);
-            // If locking fails, allow the setting to continue working normally
-        }
+        // Hide the modal
+        hideConfirmModal();
+    } catch (error) {
+        console.error('Failed to lock setting:', error);
+        // If locking fails, allow the setting to continue working normally
+        hideConfirmModal();
     }
 };
 

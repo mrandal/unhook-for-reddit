@@ -234,7 +234,27 @@
         </div>
     </div>
 
-
+    <!-- Custom Confirmation Popup Modal -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <h3>⚠️ Confirm Permanent Lock</h3>
+            </div>
+            <div class="confirm-modal-body">
+                <p>Are you sure you want to <strong>PERMANENTLY LOCK</strong> the "<span
+                        id="confirmSettingName"></span>" setting?</p>
+                <div class="warning-box">
+                    <p><strong>⚠️ WARNING:</strong> Once locked, this setting cannot be changed unless you reinstall the
+                        extension.</p>
+                    <p>This action is irreversible.</p>
+                </div>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" id="cancelLockBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="confirmLockBtn" class="btn btn-danger">Confirm Permanent Lock</button>
+            </div>
+        </div>
+    </div>
 
     <script src="options.js"></script>
 </body>
