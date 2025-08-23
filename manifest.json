@@ -1,7 +1,7 @@
 {
   "name": "Unhook for Reddit",
   "description": "Remove distracting elements from Reddit to help you focus on what matters",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "manifest_version": 3,
   "permissions": [
     "storage"
