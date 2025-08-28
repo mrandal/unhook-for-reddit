@@ -10,6 +10,7 @@ const STORAGE_KEYS = [
     "hideSideBar",
     "hideComments",
     "hideRecentPosts",
+    "hideSearch",
     "hideTrending",
     "hidePopular",
     "hideExplore",
@@ -26,6 +27,7 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideSideBar",
     "lock_hideComments",
     "lock_hideRecentPosts",
+    "lock_hideSearch",
     "lock_hideTrending",
     "lock_hidePopular",
     "lock_hideExplore",
@@ -40,6 +42,7 @@ const OPTION_IDS = {
     hideSideBar: "hideSideBar",
     hideComments: "hideComments",
     hideRecentPosts: "hideRecentPosts",
+    hideSearch: "hideSearch",
     hideTrending: "hideTrending",
     hidePopular: "hidePopular",
     hideExplore: "hideExplore",
@@ -57,6 +60,7 @@ const getSettingDisplayName = (settingId) => {
         hideSideBar: "Hide Left Sidebar",
         hideComments: "Hide Comments",
         hideRecentPosts: "Hide Recent Posts",
+        hideSearch: "Hide Search",
         hideTrending: "Hide Trending Searches",
         hidePopular: "Hide Popular",
         hideExplore: "Hide Explore",
@@ -74,6 +78,7 @@ const hideSubredditFeed = document.getElementById(OPTION_IDS.hideSubredditFeed);
 const hideSideBar = document.getElementById(OPTION_IDS.hideSideBar);
 const hideComments = document.getElementById(OPTION_IDS.hideComments);
 const hideRecentPosts = document.getElementById(OPTION_IDS.hideRecentPosts);
+const hideSearch = document.getElementById(OPTION_IDS.hideSearch);
 const hideTrending = document.getElementById(OPTION_IDS.hideTrending);
 const hidePopular = document.getElementById(OPTION_IDS.hidePopular);
 const hideExplore = document.getElementById(OPTION_IDS.hideExplore);
@@ -84,12 +89,28 @@ const hideCommunities = document.getElementById(OPTION_IDS.hideCommunities);
 // Get sidebar sub-option containers for enabling/disabling
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
 
+// Get search sub-option containers for enabling/disabling
+const searchSubOptions = document.querySelectorAll('.search-sub-option');
+
 // Function to update sidebar sub-options state
 const updateSidebarSubOptions = () => {
     const isMainSidebarHidden = hideSideBar.checked;
 
     sidebarSubOptions.forEach(container => {
         if (isMainSidebarHidden) {
+            container.classList.add('disabled');
+        } else {
+            container.classList.remove('disabled');
+        }
+    });
+};
+
+// Function to update search sub-options state
+const updateSearchSubOptions = () => {
+    const isMainSearchHidden = hideSearch.checked;
+
+    searchSubOptions.forEach(container => {
+        if (isMainSearchHidden) {
             container.classList.add('disabled');
         } else {
             container.classList.remove('disabled');
@@ -117,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideSideBar.checked = data.hideSideBar || false;
         hideComments.checked = data.hideComments || false;
         hideRecentPosts.checked = data.hideRecentPosts || false;
+        hideSearch.checked = data.hideSearch || false;
         hideTrending.checked = data.hideTrending || false;
         hidePopular.checked = data.hidePopular || false;
         hideExplore.checked = data.hideExplore || false;
@@ -129,6 +151,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Update sidebar sub-options state
         updateSidebarSubOptions();
+
+        // Update search sub-options state
+        updateSearchSubOptions();
     });
 });
 
@@ -141,6 +166,7 @@ const saveSettings = () => {
         hideSideBar: hideSideBar.checked,
         hideComments: hideComments.checked,
         hideRecentPosts: hideRecentPosts.checked,
+        hideSearch: hideSearch.checked,
         hideTrending: hideTrending.checked,
         hidePopular: hidePopular.checked,
         hideExplore: hideExplore.checked,
@@ -164,6 +190,12 @@ const handleSidebarToggle = () => {
     saveSettings();
 };
 
+// Special handler for search toggle that also updates sub-options
+const handleSearchToggle = () => {
+    updateSearchSubOptions();
+    saveSettings();
+};
+
 // Special handler for dark mode toggle that also applies the theme
 const handleDarkModeToggle = () => {
     applyDarkMode(darkMode.checked);
@@ -177,6 +209,7 @@ hideSubredditFeed.addEventListener('change', saveSettings);
 hideSideBar.addEventListener('change', handleSidebarToggle); // Special handler for sidebar
 hideComments.addEventListener('change', saveSettings);
 hideRecentPosts.addEventListener('change', saveSettings);
+hideSearch.addEventListener('change', handleSearchToggle); // Special handler for search
 hideTrending.addEventListener('change', saveSettings);
 hidePopular.addEventListener('change', saveSettings);
 hideExplore.addEventListener('change', saveSettings);
@@ -188,7 +221,7 @@ hideCommunities.addEventListener('change', saveSettings);
 const addImmediateLockUpdates = () => {
     const settings = [
         hideHomeFeed, hideSubredditFeed, hideSideBar, hideComments,
-        hideRecentPosts, hideTrending, hidePopular, hideExplore,
+        hideRecentPosts, hideSearch, hideTrending, hidePopular, hideExplore,
         hideCustomFeeds, hideRecentSubreddits, hideCommunities
     ];
 

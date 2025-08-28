@@ -10,6 +10,7 @@ try {
         "hideSideBar",
         "hideComments",
         "hideRecentPosts",
+        "hideSearch",
         "hideTrending",
         "hidePopular",
         "hideExplore",
@@ -24,6 +25,7 @@ try {
         subredditFeed: "shreddit-feed", // [data-testid='feed'], [data-testid='subreddit-feed'], .feed, .subreddit-feed, [data-testid='post-container'], [data-testid='post']",
         comments: "shreddit-comment", // [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
         recentPosts: "recent-posts", // [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
+        search: "reddit-search-large", // Main search bar element
         trending: "#reddit-trending-searches-partial-container", //, faceplate-tracker[data-testid='reddit-trending-result']",
         trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center", // Trending searches label
         trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border", // Trending container with border
@@ -322,38 +324,49 @@ try {
             }
         });
 
-        const trendingElements = findElements(SELECTORS.trending);
-        trendingElements.forEach(element => {
-            if (currentSettings.hideTrending === true) {
+        const searchElements = findElements(SELECTORS.search);
+        searchElements.forEach(element => {
+            if (currentSettings.hideSearch === true) {
                 hideElement(element);
             } else {
                 showElement(element);
             }
         });
 
-        const trendingLabelElements = findElements(SELECTORS.trendingLabel);
-        trendingLabelElements.forEach(element => {
-            if (currentSettings.hideTrending === true) {
-                hideElement(element);
-            } else {
-                showElement(element);
-            }
-        });
+        if (!currentSettings.hideSearch) {
+            const trendingElements = findElements(SELECTORS.trending);
+            trendingElements.forEach(element => {
+                if (currentSettings.hideTrending === true) {
+                    hideElement(element);
+                } else {
+                    showElement(element);
+                }
+            });
 
-        const trendingContainerElements = findElements(SELECTORS.trendingContainer);
-        trendingContainerElements.forEach(element => {
-            if (currentSettings.hideTrending === true) {
-                // Remove border classes to hide the horizontal line
-                element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
-                // Don't remove unhook-reddit-visible class - let CSS handle the border removal
-            } else {
-                // Restore the original border classes
-                element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                // Ensure the visible class is present for proper CSS targeting
-                element.classList.add('unhook-reddit-visible');
-            }
-        });
+            const trendingLabelElements = findElements(SELECTORS.trendingLabel);
+            trendingLabelElements.forEach(element => {
+                if (currentSettings.hideTrending === true) {
+                    hideElement(element);
+                } else {
+                    showElement(element);
+                }
+            });
+
+            const trendingContainerElements = findElements(SELECTORS.trendingContainer);
+            trendingContainerElements.forEach(element => {
+                if (currentSettings.hideTrending === true) {
+                    // Remove border classes to hide the horizontal line
+                    element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                    // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
+                    // Don't remove unhook-reddit-visible class - let CSS handle the border removal
+                } else {
+                    // Restore the original border classes
+                    element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                    // Ensure the visible class is present for proper CSS targeting
+                    element.classList.add('unhook-reddit-visible');
+                }
+            });
+        }
 
         if (!currentSettings.hideSideBar) {
             const popularElements = findElements(SELECTORS.popular);
@@ -418,6 +431,7 @@ try {
                     hideSideBar: data.hideSideBar === true,
                     hideComments: data.hideComments === true,
                     hideRecentPosts: data.hideRecentPosts === true,
+                    hideSearch: data.hideSearch === true,
                     hideTrending: data.hideTrending === true,
                     hidePopular: data.hidePopular === true,
                     hideExplore: data.hideExplore === true,
@@ -436,6 +450,7 @@ try {
                 hideSideBar: false,
                 hideComments: false,
                 hideRecentPosts: false,
+                hideSearch: false,
                 hideTrending: false,
                 hidePopular: false,
                 hideExplore: false,
@@ -622,7 +637,7 @@ try {
     }
 
     const aggressivelyHideTrending = () => {
-        if (currentSettings.hideTrending === true) {
+        if (currentSettings.hideTrending === true && !currentSettings.hideSearch) {
             const trendingElements = findElements(SELECTORS.trending);
             trendingElements.forEach(element => {
                 hideElement(element);
