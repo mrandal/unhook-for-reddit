@@ -4,10 +4,11 @@ A Firefox extension that helps you focus on Reddit by hiding distracting element
 
 ## Installation
 
-### From Firefox Add-ons Store (Recommended)
-1. Visit the Firefox Add-ons store
-2. Search for "Unhook for Reddit"
-3. Click "Add to Firefox"
+Chrome: [https://chromewebstore.google.com/detail/unhook-for-reddit/mbihiifgeodcdgdlklkbmoinbgffdbeb ](url)
+
+Firefox: [https://addons.mozilla.org/en-US/firefox/addon/unhook-for-reddit/](url)
+
+Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikdicjkngjfjncbiiifbalohihabje](url)
 
 ### Manual Installation (Developer Mode)
 1. Download or clone this repository
@@ -15,13 +16,6 @@ A Firefox extension that helps you focus on Reddit by hiding distracting element
 3. Click "This Firefox" tab
 4. Click "Load Temporary Add-on"
 5. Select the `manifest.json` file from this directory
-
-## Usage
-
-1. Install the extension
-2. Click the extension icon in your toolbar
-3. Configure which elements you want to hide
-4. Visit Reddit and see the changes take effect immediately
 
 ## Settings
 
@@ -38,36 +32,6 @@ A Firefox extension that helps you focus on Reddit by hiding distracting element
 - **Hide Comments**: Removes comment sections from posts
 - **Hide Recent Posts**: Hides recent/top posts sections
 - **Hide Trending Searches**: Removes trending searches from the search bar
-
-## Technical Details
-
-- **Manifest Version**: 3
-- **Minimum Firefox Version**: 109.0
-- **Permissions**: `storage`, `activeTab`
-- **Host Permissions**: `*://www.reddit.com/*`
-
-## Development
-
-### Project Structure
-```
-unhook-reddit-fox/
-├── manifest.json          # Extension manifest
-├── content.js            # Main content script
-├── content.css           # Content styles
-├── options.html          # Options page
-├── options.js            # Options page logic
-├── styles.css            # Options page styles
-├── constants.js          # Shared constants
-├── assets/               # Extension icons
-└── README.md            # This file
-```
-
-### Key Features
-- **Shadow DOM Support**: Handles Reddit's complex Shadow DOM structure
-- **Dynamic Content**: Uses MutationObservers to handle dynamically loaded content
-- **Performance Optimized**: Caches elements and debounces operations
-- **Navigation Handling**: Prevents flickering during page navigation
-- **Settings Persistence**: Uses browser.storage.sync for cross-device sync
 
 ## License
 
