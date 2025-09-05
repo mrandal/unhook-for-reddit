@@ -31,7 +31,8 @@ Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikd
   - **Hide Communities**: Hides community sections
 - **Hide Comments**: Removes comment sections from posts
 - **Hide Recent Posts**: Hides recent/top posts sections
-- **Hide Trending Searches**: Removes trending searches from the search bar
+- **Hide Search**: Hides the search bar
+  - **Hide Trending Searches**: Removes trending searches from the search bar
 
 ## License
 
