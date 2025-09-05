@@ -4,11 +4,11 @@ A Firefox extension that helps you focus on Reddit by hiding distracting element
 
 ## Installation
 
-Chrome: [https://chromewebstore.google.com/detail/unhook-for-reddit/mbihiifgeodcdgdlklkbmoinbgffdbeb ](url)
+Chrome: [https://chromewebstore.google.com/detail/unhook-for-reddit/mbihiifgeodcdgdlklkbmoinbgffdbeb ](https://chromewebstore.google.com/detail/unhook-for-reddit/mbihiifgeodcdgdlklkbmoinbgffdbeb )
 
-Firefox: [https://addons.mozilla.org/en-US/firefox/addon/unhook-for-reddit/](url)
+Firefox: [https://addons.mozilla.org/en-US/firefox/addon/unhook-for-reddit/](https://addons.mozilla.org/en-US/firefox/addon/unhook-for-reddit/)
 
-Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikdicjkngjfjncbiiifbalohihabje](url)
+Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikdicjkngjfjncbiiifbalohihabje](https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikdicjkngjfjncbiiifbalohihabje)
 
 ### Manual Installation (Developer Mode)
 1. Download or clone this repository
