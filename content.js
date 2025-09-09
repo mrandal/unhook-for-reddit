@@ -17,6 +17,7 @@ try {
         "hideCustomFeeds",
         "hideRecentSubreddits",
         "hideCommunities",
+        "hideAll",
         "darkMode"
     ];
 
@@ -34,7 +35,8 @@ try {
         explore: "#explore-communities", //, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
         customFeeds: "#multireddits_section", //, [data-testid='custom-feeds'], [id*='custom'], [id*='feeds'], [class*='custom-feed'], [class*='multireddit']",
         recentSubreddits: "reddit-recent-pages", //, [data-testid='recent-subreddits'], [id*='recent'], [class*='recent-subreddit'], [class*='recent']",
-        communities: "#communities_section" //, [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
+        communities: "#communities_section", //, [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
+        all: '#all-posts'
     };
 
     // Store current settings globally
@@ -54,6 +56,11 @@ try {
             message: 'Explore page detected, redirecting to home...'
         },
         {
+            check: (path) => path.startsWith('/r/all'),
+            setting: 'hideAll',
+            message: 'All page detected, redirecting to home...'
+        },
+        {
             check: (path) => path.startsWith('/r/popular'),
             setting: 'hideSideBar',
             message: 'Popular page detected (sidebar hidden), redirecting to home...'
@@ -62,7 +69,12 @@ try {
             check: (path) => path === '/explore' || path.startsWith('/explore/'),
             setting: 'hideSideBar',
             message: 'Explore page detected (sidebar hidden), redirecting to home...'
-        }
+        },
+        {
+            check: (path) => path.startsWith('/r/all'),
+            setting: 'hideSideBar',
+            message: 'All page detected (sidebar hidden), redirecting to home...'
+        },
     ];
 
     // Check for page redirects early (before page fully loads)
@@ -415,6 +427,15 @@ try {
                     showElement(element.parentElement.parentElement);
                 }
             });
+
+            const allElements = findElements(SELECTORS.all);
+            allElements.forEach(element => {
+                if (currentSettings.hideAll === true) {
+                    hideElement(element);
+                } else {
+                    showElement(element);
+                }
+            });
         }
 
     };
@@ -438,6 +459,7 @@ try {
                     hideCustomFeeds: data.hideCustomFeeds === true,
                     hideRecentSubreddits: data.hideRecentSubreddits === true,
                     hideCommunities: data.hideCommunities === true,
+                    hideAll: data.hideAll === true,
                     darkMode: data.darkMode === true
                 };
 
@@ -457,6 +479,7 @@ try {
                 hideCustomFeeds: false,
                 hideRecentSubreddits: false,
                 hideCommunities: false,
+                hideAll: false,
                 darkMode: false
             };
             applyVisibilitySettings();
