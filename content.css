@@ -1,5 +1,4 @@
 /* Hide elements by default to prevent flash of content */
-
 shreddit-feed:not(.unhook-reddit-visible),
 shreddit-comment:not(.unhook-reddit-visible),
 recent-posts:not(.unhook-reddit-visible),

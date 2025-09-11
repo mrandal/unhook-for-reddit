@@ -88,26 +88,11 @@ const hideCommunities = document.getElementById(OPTION_IDS.hideCommunities);
 const hideAll = document.getElementById(OPTION_IDS.hideAll);
 
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
-
 const searchSubOptions = document.querySelectorAll('.search-sub-option');
 
-const updateSidebarSubOptions = () => {
-    const isMainSidebarHidden = hideSideBar.checked;
-
-    sidebarSubOptions.forEach(container => {
-        if (isMainSidebarHidden) {
-            container.classList.add('disabled');
-        } else {
-            container.classList.remove('disabled');
-        }
-    });
-};
-
-const updateSearchSubOptions = () => {
-    const isMainSearchHidden = hideSearch.checked;
-
-    searchSubOptions.forEach(container => {
-        if (isMainSearchHidden) {
+const updateSubOptions = (subOptions, isHidden) => {
+    subOptions.forEach(container => {
+        if (isHidden) {
             container.classList.add('disabled');
         } else {
             container.classList.remove('disabled');
@@ -141,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
         hideAll.checked = data.hideAll || false;
 
         applyDarkMode(darkMode.checked);
-        updateSidebarSubOptions();
-        updateSearchSubOptions();
+        updateSubOptions(sidebarSubOptions, hideSideBar.checked);
+        updateSubOptions(searchSubOptions, hideSearch.checked);
     });
 });
 
@@ -170,12 +155,12 @@ const saveSettings = () => {
 };
 
 const handleSidebarToggle = () => {
-    updateSidebarSubOptions();
+    updateSubOptions(sidebarSubOptions, hideSideBar.checked);
     saveSettings();
 };
 
 const handleSearchToggle = () => {
-    updateSearchSubOptions();
+    updateSubOptions(searchSubOptions, hideSearch.checked);
     saveSettings();
 };
 
@@ -184,20 +169,13 @@ const handleDarkModeToggle = () => {
     saveSettings();
 };
 
-darkMode.addEventListener('change', handleDarkModeToggle); // Special handler for dark mode
-hideHomeFeed.addEventListener('change', saveSettings);
-hideSubredditFeed.addEventListener('change', saveSettings);
-hideSideBar.addEventListener('change', handleSidebarToggle); // Special handler for sidebar
-hideComments.addEventListener('change', saveSettings);
-hideRecentPosts.addEventListener('change', saveSettings);
-hideSearch.addEventListener('change', handleSearchToggle); // Special handler for search
-hideTrending.addEventListener('change', saveSettings);
-hidePopular.addEventListener('change', saveSettings);
-hideExplore.addEventListener('change', saveSettings);
-hideCustomFeeds.addEventListener('change', saveSettings);
-hideRecentSubreddits.addEventListener('change', saveSettings);
-hideCommunities.addEventListener('change', saveSettings);
-hideAll.addEventListener('change', saveSettings);
+darkMode.addEventListener('change', handleDarkModeToggle);
+for (const setting of [hideHomeFeed, hideSubredditFeed, hideComments, hideRecentPosts, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll]) {
+    setting.addEventListener('change', saveSettings);
+}
+for (const setting of [hideSideBar, hideSearch]) {
+    setting.addEventListener('change', handleSidebarToggle);
+}
 
 const addImmediateLockUpdates = () => {
     const settings = [
