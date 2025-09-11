@@ -17,6 +17,7 @@ const STORAGE_KEYS = [
     "hideCustomFeeds",
     "hideRecentSubreddits",
     "hideCommunities",
+    "hideAll",
     "darkMode"
 ];
 
@@ -33,7 +34,8 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideExplore",
     "lock_hideCustomFeeds",
     "lock_hideRecentSubreddits",
-    "lock_hideCommunities"
+    "lock_hideCommunities",
+    "lock_hideAll"
 ];
 
 const OPTION_IDS = {
@@ -49,6 +51,7 @@ const OPTION_IDS = {
     hideCustomFeeds: "hideCustomFeeds",
     hideRecentSubreddits: "hideRecentSubreddits",
     hideCommunities: "hideCommunities",
+    hideAll: "hideAll",
     darkMode: "darkMode"
 };
 
@@ -66,7 +69,8 @@ const getSettingDisplayName = (settingId) => {
         hideExplore: "Hide Explore",
         hideCustomFeeds: "Hide Custom Feeds",
         hideRecentSubreddits: "Hide Recent Subreddits",
-        hideCommunities: "Hide Communities"
+        hideCommunities: "Hide Communities",
+        hideAll: "Hide r/All",
     };
 
     return displayNames[settingId] || settingId;
@@ -85,6 +89,7 @@ const hideExplore = document.getElementById(OPTION_IDS.hideExplore);
 const hideCustomFeeds = document.getElementById(OPTION_IDS.hideCustomFeeds);
 const hideRecentSubreddits = document.getElementById(OPTION_IDS.hideRecentSubreddits);
 const hideCommunities = document.getElementById(OPTION_IDS.hideCommunities);
+const hideAll = document.getElementById(OPTION_IDS.hideAll);
 
 // Get sidebar sub-option containers for enabling/disabling
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
@@ -145,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideCustomFeeds.checked = data.hideCustomFeeds || false;
         hideRecentSubreddits.checked = data.hideRecentSubreddits || false;
         hideCommunities.checked = data.hideCommunities || false;
+        hideAll.checked = data.hideAll || false;
 
         // Apply dark mode immediately
         applyDarkMode(darkMode.checked);
@@ -172,7 +178,8 @@ const saveSettings = () => {
         hideExplore: hideExplore.checked,
         hideCustomFeeds: hideCustomFeeds.checked,
         hideRecentSubreddits: hideRecentSubreddits.checked,
-        hideCommunities: hideCommunities.checked
+        hideCommunities: hideCommunities.checked,
+        hideAll: hideAll.checked,
     };
 
     console.log('Saving settings:', settings);
@@ -216,13 +223,14 @@ hideExplore.addEventListener('change', saveSettings);
 hideCustomFeeds.addEventListener('change', saveSettings);
 hideRecentSubreddits.addEventListener('change', saveSettings);
 hideCommunities.addEventListener('change', saveSettings);
+hideAll.addEventListener('change', saveSettings);
 
 // Add immediate lock button state updates for each setting
 const addImmediateLockUpdates = () => {
     const settings = [
         hideHomeFeed, hideSubredditFeed, hideSideBar, hideComments,
         hideRecentPosts, hideSearch, hideTrending, hidePopular, hideExplore,
-        hideCustomFeeds, hideRecentSubreddits, hideCommunities
+        hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll
     ];
 
     settings.forEach(setting => {
