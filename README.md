@@ -26,6 +26,7 @@ Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikd
 - **Sidebar Sub-options**: When "Hide Left Sidebar" is enabled, these options are disabled:
   - **Hide Popular**: Hides the Popular button and redirects from `/r/popular`
   - **Hide Explore**: Hides the Explore button and redirects from `/explore`
+  - **Hide r/All**: Hides the All button and redirects from `/r/all`
   - **Hide Custom Feeds**: Hides custom feed sections
   - **Hide Recent Subreddits**: Hides recently visited subreddits
   - **Hide Communities**: Hides community sections
