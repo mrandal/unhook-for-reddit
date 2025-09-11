@@ -1,112 +1,32 @@
 /* Hide elements by default to prevent flash of content */
-/* JavaScript will selectively show elements based on user settings */
 
-/* Always hide feeds initially - JavaScript will show the appropriate one */
-shreddit-feed,
-[data-testid="feed"],
-[data-testid="home-feed"],
-[data-testid="subreddit-feed"] {
-  display: none !important;
-}
-
-/* Hide other elements by default */
-#left-sidebar,
-recent-posts,
-reddit-search-large,
-[data-testid="search"],
-[data-testid="search-bar"],
-[data-testid="search-large"],
-#reddit-trending-searches-partial-container,
-faceplate-tracker[data-testid="reddit-trending-result"],
-[data-testid="comment"],
-[data-testid="comment-tree"],
-[data-testid="recent-posts"],
-[data-testid="trending-posts"],
-[data-testid="left-sidebar"],
-[data-testid="navigation"],
-[data-testid="community-list"] {
-  display: none !important;
-}
-
-/* Hide sidebar sub-elements by default - JavaScript will show based on settings */
-#popular-posts,
-[id="popular-posts"],
-li[id="popular-posts"],
-#explore-communities,
-[id="explore"],
-li[id="explore"],
-a[href*="/r/popular"],
-a[href*="/explore"],
-[id*="multireddits_section"],
-reddit-recent-pages,
-[class*="popular"],
-[class*="explore"],
-[class*="custom-feed"],
-[class*="multireddit"],
-[class*="recent-subreddit"],
-[class*="communities"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
-
-/* Prevent flash during navigation by hiding feeds more aggressively */
-body shreddit-feed,
-body [data-testid="feed"],
-body [data-testid="home-feed"],
-body [data-testid="subreddit-feed"] {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* Add a class that JavaScript can use to show elements - make these very specific */
-shreddit-feed.unhook-reddit-visible,
-#left-sidebar.unhook-reddit-visible,
-recent-posts.unhook-reddit-visible,
-reddit-search-large.unhook-reddit-visible,
-[data-testid="search"].unhook-reddit-visible,
-[data-testid="search-bar"].unhook-reddit-visible,
-[data-testid="search-large"].unhook-reddit-visible,
-#reddit-trending-searches-partial-container.unhook-reddit-visible,
-faceplate-tracker[data-testid="reddit-trending-result"].unhook-reddit-visible,
+shreddit-feed:not(.unhook-reddit-visible),
+shreddit-comment:not(.unhook-reddit-visible),
+recent-posts:not(.unhook-reddit-visible),
+reddit-search-large:not(.unhook-reddit-visible),
+#reddit-trending-searches-partial-container:not(.unhook-reddit-visible),
+div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center.unhook-reddit-visible,
 div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border.unhook-reddit-visible,
-[data-testid="feed"].unhook-reddit-visible,
-[data-testid="home-feed"].unhook-reddit-visible,
-[data-testid="subreddit-feed"].unhook-reddit-visible,
-[data-testid="comment"].unhook-reddit-visible,
-[data-testid="comment-tree"].unhook-reddit-visible,
-[data-testid="recent-posts"].unhook-reddit-visible,
-[data-testid="trending-posts"].unhook-reddit-visible,
-[data-testid="trending-searches"].unhook-reddit-visible,
-[data-testid="search-dropdown"].unhook-reddit-visible,
-[data-testid="left-sidebar"].unhook-reddit-visible,
-[data-testid="navigation"].unhook-reddit-visible,
-[data-testid="community-list"].unhook-reddit-visible,
-nav.unhook-reddit-visible,
-#popular-posts.unhook-reddit-visible,
-[id="popular-posts"].unhook-reddit-visible,
-li[id="popular-posts"].unhook-reddit-visible,
-#explore-communities.unhook-reddit-visible,
-[id="explore"].unhook-reddit-visible,
-li[id="explore"].unhook-reddit-visible,
-a[href*="/r/popular"].unhook-reddit-visible,
-a[href*="/explore"].unhook-reddit-visible,
-[id*="multireddits_section"].unhook-reddit-visible,
-reddit-recent-pages.unhook-reddit-visible,
-[class*="popular"].unhook-reddit-visible,
-[class*="explore"].unhook-reddit-visible,
-[class*="custom-feed"].unhook-reddit-visible,
-[class*="multireddit"].unhook-reddit-visible,
-[class*="recent-subreddit"].unhook-reddit-visible,
-[class*="communities"].unhook-reddit-visible,
+#left-sidebar:not(.unhook-reddit-visible),
+#popular-posts:not(.unhook-reddit-visible),
+#explore-communities:not(.unhook-reddit-visible),
+#multireddits_section:not(.unhook-reddit-visible),
+#all-posts:not(.unhook-reddit-visible),
+reddit-recent-pages:not(.unhook-reddit-visible),
+#communities_section:not(.unhook-reddit-visible),
+#all-posts:not(.unhook-reddit-visible),
+.unhook-reddit-visible:not(.unhook-reddit-visible) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 .unhook-reddit-visible {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
 
-/* More specific overrides for different display types */
 .unhook-reddit-visible[data-display="flex"] {
   display: flex !important;
   visibility: visible !important;
@@ -129,30 +49,6 @@ reddit-recent-pages.unhook-reddit-visible,
   display: inline-block !important;
   visibility: visible !important;
   opacity: 1 !important;
-}
-
-/* Ensure elements without the visible class stay hidden */
-#left-sidebar:not(.unhook-reddit-visible),
-[data-testid="left-sidebar"]:not(.unhook-reddit-visible),
-[data-testid="navigation"]:not(.unhook-reddit-visible),
-shreddit-feed:not(.unhook-reddit-visible),
-[data-testid="feed"]:not(.unhook-reddit-visible),
-[data-testid="home-feed"]:not(.unhook-reddit-visible),
-[data-testid="subreddit-feed"]:not(.unhook-reddit-visible),
-[data-testid="comment"]:not(.unhook-reddit-visible),
-[data-testid="comment-tree"]:not(.unhook-reddit-visible),
-recent-posts:not(.unhook-reddit-visible),
-reddit-search-large:not(.unhook-reddit-visible),
-[data-testid="search"]:not(.unhook-reddit-visible),
-[data-testid="search-bar"]:not(.unhook-reddit-visible),
-[data-testid="search-large"]:not(.unhook-reddit-visible),
-[data-testid="recent-posts"]:not(.unhook-reddit-visible),
-[data-testid="trending-posts"]:not(.unhook-reddit-visible),
-#reddit-trending-searches-partial-container:not(.unhook-reddit-visible),
-faceplate-tracker[data-testid="reddit-trending-result"]:not(.unhook-reddit-visible) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
 }
 
 /* Remove border from trending container when trending searches are hidden */

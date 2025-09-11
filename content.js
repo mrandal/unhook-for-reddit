@@ -3,7 +3,6 @@ try {
         var browser = chrome;
     }
 
-    // Hardcoded constants for testing
     const STORAGE_KEYS = [
         "hideHomeFeed",
         "hideSubredditFeed",
@@ -22,27 +21,29 @@ try {
     ];
 
     const SELECTORS = {
-        homeFeed: "shreddit-feed", // [data-testid='feed'], [data-testid='home-feed'], .feed, .home-feed, [data-testid='post-container'], [data-testid='post']",
-        subredditFeed: "shreddit-feed", // [data-testid='feed'], [data-testid='subreddit-feed'], .feed, .subreddit-feed, [data-testid='post-container'], [data-testid='post']",
-        comments: "shreddit-comment", // [data-testid='comment'], [data-testid='comment-tree'], .comment, .comment-tree, [data-testid='comment-container'], [data-testid='comment-tree']",
-        recentPosts: "recent-posts", // [data-testid='recent-posts'], [data-testid='trending-posts'], .recent-posts, .trending-posts, [data-testid='trending'], [data-testid='popular-posts']",
-        search: "reddit-search-large", // Main search bar element
-        trending: "#reddit-trending-searches-partial-container", //, faceplate-tracker[data-testid='reddit-trending-result']",
-        trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center", // Trending searches label
-        trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border", // Trending container with border
-        leftSidebar: "#left-sidebar", //, [data-testid='left-sidebar'], [data-testid='sidebar'], .left-sidebar, .sidebar, [data-testid='navigation'], [data-testid='community-list']",
-        popular: "#popular-posts", //, [id='popular-posts'], li[id='popular-posts'], [class*='popular'], [data-testid*='popular'], a[href*='/r/popular'], [href*='/r/popular']",
-        explore: "#explore-communities", //, [id='explore'], li[id='explore'], [class*='explore'], [data-testid*='explore'], a[href*='/explore'], [href*='/explore']",
-        customFeeds: "#multireddits_section", //, [data-testid='custom-feeds'], [id*='custom'], [id*='feeds'], [class*='custom-feed'], [class*='multireddit']",
-        recentSubreddits: "reddit-recent-pages", //, [data-testid='recent-subreddits'], [id*='recent'], [class*='recent-subreddit'], [class*='recent']",
-        communities: "#communities_section", //, [id*='communities'], [id*='community'], [class*='communities'], [class*='community']"
-        all: '#all-posts'
+        homeFeed: "shreddit-feed",
+        subredditFeed: "shreddit-feed",
+        comments: "shreddit-comment",
+        recentPosts: "recent-posts",
+        search: "reddit-search-large",
+        trending: "#reddit-trending-searches-partial-container",
+        trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center",
+        trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
+        leftSidebar: "#left-sidebar",
+        popular: "#popular-posts",
+        explore: "#explore-communities",
+        customFeeds: "#multireddits_section",
+        recentSubreddits: "reddit-recent-pages",
+        communities: "#communities_section",
+        all: "#all-posts"
     };
 
-    // Store current settings globally
     let currentSettings = {};
 
     let originalDisplayValues = new Map();
+
+    // Hold time for elements containing shadow DOMs to prevent flash
+    const holdTime = 0.2; // seconds
 
     const REDIRECT_MAPPINGS = [
         {
@@ -157,8 +158,21 @@ try {
         element.style.setProperty('opacity', '0', 'important');
     };
 
-    // Helper function to show element (works with CSS !important)
-    const showElement = (element) => {
+    // Helper function to check if element contains shadow DOM
+    const containsShadowDOM = (element) => {
+        const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+        const shadowDOMElements = [
+            'reddit-search-large',
+            'reddit-sidebar-nav',
+            'left-nav-top-section'
+        ];
+        return shadowDOMElements.includes(tagName) ||
+            (element.id && shadowDOMElements.some(tag => element.id.includes(tag.replace('-', '')))) ||
+            element.shadowRoot;
+    };
+
+    // Helper function to show element immediately (works with CSS !important)
+    const showElementImmediate = (element) => {
         // First, store the original display if we haven't already
         storeOriginalDisplay(element);
 
@@ -184,35 +198,51 @@ try {
         element.style.setProperty('display', displayValue, 'important');
         element.style.setProperty('visibility', 'visible', 'important');
         element.style.setProperty('opacity', '1', 'important');
+    };
 
-        // Add a small delay to check if it worked
-        // setTimeout(() => {
-        //     const computedDisplay = window.getComputedStyle(element).display;
-        //     // If it's still hidden, try even more aggressive approach
-        //     if (computedDisplay === 'none') {
-        //         element.style.cssText += `display: ${displayValue} !important; visibility: visible !important; opacity: 1 !important;`;
-        //     }
-        // }, 10);
+    // Helper function to show element (with delay for shadow DOM containers)
+    const showElement = (element) => {
+        if (containsShadowDOM(element)) {
+            // Delay showing elements with shadow DOM to prevent flash
+            setTimeout(() => {
+                showElementImmediate(element);
+            }, holdTime * 1000);
+        } else {
+            // Show regular elements immediately
+            showElementImmediate(element);
+        }
     };
 
 
     const getSearchShadowRoot = () => {
         const search = document.querySelector('reddit-search-large');
+        if (!search || !search.shadowRoot) {
+            return null;
+        }
         return search.shadowRoot;
     };
 
     const getSidebarShadowRoot = () => {
         const sidebar = document.querySelector('reddit-sidebar-nav');
+        if (!sidebar || !sidebar.shadowRoot) {
+            return null;
+        }
         return sidebar.shadowRoot;
     };
 
     const getLeftTopShadowRoot = () => {
         const leftTop = document.querySelector('left-nav-top-section');
+        if (!leftTop || !leftTop.shadowRoot) {
+            return null;
+        }
         return leftTop.shadowRoot;
     };
 
+    const shadowDOMReadyLoading = () => {
+        return getSearchShadowRoot() && getSidebarShadowRoot() && getLeftTopShadowRoot();
+    };
 
-    // Helper function to find elements using multiple selectors, including Shadow DOM
+
     const findElements = (selectorString) => {
         const selectors = selectorString.split(', ').map(s => s.trim());
         let elements = [];
@@ -251,7 +281,6 @@ try {
             return found;
         };
 
-        // Try each selector
         for (const selector of selectors) {
             const normalFound = searchInRoot(document, selector);
             if (normalFound.length > 0) {
@@ -269,16 +298,12 @@ try {
         return elements;
     };
 
-    // Function to apply visibility settings
     const applyVisibilitySettings = () => {
         const isSubredditPage = window.location.pathname.startsWith('/r');
         const isUserPage = window.location.pathname.startsWith('/user');
         const isExplorePage = window.location.pathname.startsWith('/explore');
 
-        // Safety check - if currentSettings is empty or undefined, show all elements
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
-
-            // Show all elements when no settings are loaded
             Object.values(SELECTORS).forEach(selectorString => {
                 const elements = findElements(selectorString);
                 elements.forEach(element => showElement(element));
@@ -319,7 +344,6 @@ try {
 
         const leftSidebarElements = findElements(SELECTORS.leftSidebar);
         leftSidebarElements.forEach((element, index) => {
-
             if (currentSettings.hideSideBar === true) {
                 hideElement(element);
             } else {
@@ -854,6 +878,59 @@ try {
         setupSearchObserver();
         checkExistingSearchShadowRoots();
     }
+
+    // More comprehensive loading detection
+    const isPageLoading = () => {
+        return document.readyState === 'loading' ||
+            document.readyState === 'interactive';
+    };
+
+    const isPageFullyLoaded = () => {
+        return document.readyState === 'complete';
+    };
+
+    // Check if specific elements are still loading
+    const areElementsStillLoading = () => {
+        // Check for loading indicators
+        const loadingIndicators = document.querySelectorAll(
+            '[data-loading="true"]',
+            '.loading',
+            '.spinner',
+            '[aria-busy="true"]',
+            'shreddit-async-loader'
+        );
+
+        // Check for elements that should exist but don't yet
+        const expectedElements = Object.values(SELECTORS);
+        const missingElements = expectedElements.some(selector => {
+            const elements = findElements(selector);
+            return elements.length === 0;
+        });
+
+        return loadingIndicators.length > 0 || missingElements;
+    };
+
+    // Detect ongoing network requests
+    const isNetworkActive = () => {
+        // Check for fetch/XHR activity (modern approach)
+        return performance.getEntriesByType('navigation')[0]?.loadEventEnd === 0;
+    };
+
+    // Reddit-specific loading indicators
+    const isRedditLoading = () => {
+        // Check for Reddit's loading elements
+        const redditLoaders = document.querySelectorAll(
+            'shreddit-async-loader',
+            '[data-testid="loading"]',
+            '.loading-page',
+            'reddit-header-loading'
+        );
+
+        // Check if main Reddit app hasn't loaded yet
+        const appContainer = document.querySelector('shreddit-app, reddit-header-large');
+
+        return redditLoaders.length > 0 || !appContainer;
+    };
 
 } catch (error) {
     console.error('Content script error:', error);
