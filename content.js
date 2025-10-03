@@ -44,7 +44,6 @@ try {
         leftTop: "left-nav-top-section"
     };
 
-    // Configuration for element visibility handling
     const ELEMENT_CONFIGS = [
         {
             key: 'homeFeed',
@@ -354,7 +353,6 @@ try {
     };
 
     const applyVisibilitySettings = () => {
-        // Build page context
         const pageContext = {
             isSubredditPage: window.location.pathname.startsWith('/r'),
             isUserPage: window.location.pathname.startsWith('/user'),
@@ -369,34 +367,25 @@ try {
             return;
         }
 
-        // Loop through each element configuration
         ELEMENT_CONFIGS.forEach(config => {
-            // Check if this element should be processed based on conditions
             if (config.condition && !config.condition(pageContext, currentSettings)) {
-                return; // Skip this element
+                return;
             }
 
-            // Find elements using the selector key
             const elements = findElements(SELECTORS[config.key]);
 
-            // Process each found element
             elements.forEach(element => {
-                // Check if element has custom handler
                 if (config.customHandler) {
                     const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
                     config.customHandler(element, shouldHide);
                 } else {
-                    // Determine if element should be hidden
                     const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
 
                     if (shouldHide) {
-                        // Use targetElement if specified (for parent element hiding)
                         const targetEl = config.targetElement ? config.targetElement(element) : element;
                         hideElement(targetEl);
                     } else {
-                        // Show element(s)
                         if (config.showExtraElements) {
-                            // Show multiple elements if specified
                             config.showExtraElements(element).forEach(el => showElement(el));
                         } else {
                             showElement(element);
@@ -487,7 +476,7 @@ try {
                 } else {
                     isDestinationSubreddit = window.location.pathname.startsWith('/r');
                 }
-                const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
+                const feedElements = findElements(SELECTORS.homeFeed);
 
                 if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
                     feedElements.forEach(el => {
@@ -529,7 +518,7 @@ try {
     document.addEventListener('click', (event) => {
         const target = event.target.closest('a[href]');
         if (target && target.href && target.href.includes('reddit.com')) {
-            handleNavigationStart(target.href); // Pass destination URL
+            handleNavigationStart(target.href);
         }
     }, true);
 
