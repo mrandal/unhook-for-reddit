@@ -44,6 +44,108 @@ try {
         leftTop: "left-nav-top-section"
     };
 
+    // Configuration for element visibility handling
+    const ELEMENT_CONFIGS = [
+        {
+            key: 'homeFeed',
+            setting: 'hideHomeFeed',
+            condition: (pageContext) => !pageContext.isSubredditPage,
+            shouldHide: (settings, pageContext) =>
+                !pageContext.isUserPage && !pageContext.isExplorePage && settings.hideHomeFeed === true
+        },
+        {
+            key: 'subredditFeed',
+            setting: 'hideSubredditFeed',
+            condition: (pageContext) => pageContext.isSubredditPage,
+            shouldHide: (settings) => settings.hideSubredditFeed === true
+        },
+        {
+            key: 'comments',
+            setting: 'hideComments',
+            shouldHide: (settings) => settings.hideComments === true
+        },
+        {
+            key: 'leftSidebar',
+            setting: 'hideSideBar',
+            shouldHide: (settings) => settings.hideSideBar === true
+        },
+        {
+            key: 'recentPosts',
+            setting: 'hideRecentPosts',
+            shouldHide: (settings) => settings.hideRecentPosts === true
+        },
+        {
+            key: 'search',
+            setting: 'hideSearch',
+            shouldHide: (settings) => settings.hideSearch === true
+        },
+        {
+            key: 'trending',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            shouldHide: (settings) => settings.hideTrending === true
+        },
+        {
+            key: 'trendingLabel',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            shouldHide: (settings) => settings.hideTrending === true
+        },
+        {
+            key: 'trendingContainer',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            customHandler: (element, shouldHide) => {
+                if (shouldHide) {
+                    element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                } else {
+                    element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                    element.classList.add('unhook-reddit-visible');
+                }
+            }
+        },
+        {
+            key: 'popular',
+            setting: 'hidePopular',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hidePopular === true
+        },
+        {
+            key: 'explore',
+            setting: 'hideExplore',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideExplore === true
+        },
+        {
+            key: 'customFeeds',
+            setting: 'hideCustomFeeds',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideCustomFeeds === true,
+            targetElement: (element) => element.parentElement.parentElement,
+            showExtraElements: (element) => [element, element.parentElement.parentElement]
+        },
+        {
+            key: 'recentSubreddits',
+            setting: 'hideRecentSubreddits',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideRecentSubreddits === true
+        },
+        {
+            key: 'communities',
+            setting: 'hideCommunities',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideCommunities === true,
+            targetElement: (element) => element.parentElement.parentElement,
+            showExtraElements: (element) => [element, element.parentElement.parentElement]
+        },
+        {
+            key: 'all',
+            setting: 'hideAll',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideAll === true
+        }
+    ];
+
     let currentSettings = {};
 
     let originalDisplayValues = new Map();
@@ -55,32 +157,26 @@ try {
         {
             check: (path) => path.startsWith('/r/popular'),
             setting: 'hidePopular',
-            message: 'Popular page detected, redirecting to home...'
         },
         {
             check: (path) => path === '/explore' || path.startsWith('/explore/'),
             setting: 'hideExplore',
-            message: 'Explore page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideAll',
-            message: 'All page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/popular'),
             setting: 'hideSideBar',
-            message: 'Popular page detected (sidebar hidden), redirecting to home...'
         },
         {
             check: (path) => path === '/explore' || path.startsWith('/explore/'),
             setting: 'hideSideBar',
-            message: 'Explore page detected (sidebar hidden), redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideSideBar',
-            message: 'All page detected (sidebar hidden), redirecting to home...'
         },
     ];
 
@@ -202,10 +298,6 @@ try {
         return shadowRoot.shadowRoot;
     };
 
-    const shadowDOMReadyLoading = () => {
-        return getSearchShadowRoot() && getSidebarShadowRoot() && getLeftTopShadowRoot();
-    };
-
     const findElements = (selectorString) => {
         const selectors = selectorString.split(', ').map(s => s.trim());
         let elements = [];
@@ -262,9 +354,12 @@ try {
     };
 
     const applyVisibilitySettings = () => {
-        const isSubredditPage = window.location.pathname.startsWith('/r');
-        const isUserPage = window.location.pathname.startsWith('/user');
-        const isExplorePage = window.location.pathname.startsWith('/explore');
+        // Build page context
+        const pageContext = {
+            isSubredditPage: window.location.pathname.startsWith('/r'),
+            isUserPage: window.location.pathname.startsWith('/user'),
+            isExplorePage: window.location.pathname.startsWith('/explore')
+        };
 
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
             Object.values(SELECTORS).forEach(selectorString => {
@@ -274,152 +369,42 @@ try {
             return;
         }
 
-        const homeFeedElements = findElements(SELECTORS.homeFeed);
-        if (!isSubredditPage) {
-            homeFeedElements.forEach(element => {
-                if (!isUserPage && !isExplorePage && currentSettings.hideHomeFeed === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-        }
-
-        const subredditFeedElements = findElements(SELECTORS.subredditFeed);
-        if (isSubredditPage) {
-            subredditFeedElements.forEach(element => {
-                if (currentSettings.hideSubredditFeed === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-        }
-
-        const commentElements = findElements(SELECTORS.comments);
-        commentElements.forEach(element => {
-            if (currentSettings.hideComments === true) {
-                hideElement(element);
-            } else {
-                showElement(element);
+        // Loop through each element configuration
+        ELEMENT_CONFIGS.forEach(config => {
+            // Check if this element should be processed based on conditions
+            if (config.condition && !config.condition(pageContext, currentSettings)) {
+                return; // Skip this element
             }
+
+            // Find elements using the selector key
+            const elements = findElements(SELECTORS[config.key]);
+
+            // Process each found element
+            elements.forEach(element => {
+                // Check if element has custom handler
+                if (config.customHandler) {
+                    const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
+                    config.customHandler(element, shouldHide);
+                } else {
+                    // Determine if element should be hidden
+                    const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
+
+                    if (shouldHide) {
+                        // Use targetElement if specified (for parent element hiding)
+                        const targetEl = config.targetElement ? config.targetElement(element) : element;
+                        hideElement(targetEl);
+                    } else {
+                        // Show element(s)
+                        if (config.showExtraElements) {
+                            // Show multiple elements if specified
+                            config.showExtraElements(element).forEach(el => showElement(el));
+                        } else {
+                            showElement(element);
+                        }
+                    }
+                }
+            });
         });
-
-        const leftSidebarElements = findElements(SELECTORS.leftSidebar);
-        leftSidebarElements.forEach((element, index) => {
-            if (currentSettings.hideSideBar === true) {
-                hideElement(element);
-            } else {
-                showElement(element);
-            }
-        });
-
-        const recentPostElements = findElements(SELECTORS.recentPosts);
-        recentPostElements.forEach(element => {
-            if (currentSettings.hideRecentPosts === true) {
-                hideElement(element);
-            } else {
-                showElement(element);
-            }
-        });
-
-        const searchElements = findElements(SELECTORS.search);
-        searchElements.forEach(element => {
-            if (currentSettings.hideSearch === true) {
-                hideElement(element);
-            } else {
-                showElement(element);
-            }
-        });
-
-        if (!currentSettings.hideSearch) {
-            const trendingElements = findElements(SELECTORS.trending);
-            trendingElements.forEach(element => {
-                if (currentSettings.hideTrending === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-
-            const trendingLabelElements = findElements(SELECTORS.trendingLabel);
-            trendingLabelElements.forEach(element => {
-                if (currentSettings.hideTrending === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-
-            const trendingContainerElements = findElements(SELECTORS.trendingContainer);
-            trendingContainerElements.forEach(element => {
-                if (currentSettings.hideTrending === true) {
-                    element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                } else {
-                    element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                    element.classList.add('unhook-reddit-visible');
-                }
-            });
-        }
-
-        if (!currentSettings.hideSideBar) {
-            const popularElements = findElements(SELECTORS.popular);
-            popularElements.forEach(element => {
-                if (currentSettings.hidePopular === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-
-            const exploreElements = findElements(SELECTORS.explore);
-            exploreElements.forEach(element => {
-                if (currentSettings.hideExplore === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-
-            const customFeedsElements = findElements(SELECTORS.customFeeds);
-            customFeedsElements.forEach(element => {
-                if (currentSettings.hideCustomFeeds === true) {
-                    hideElement(element.parentElement.parentElement);
-                } else {
-                    showElement(element);
-                    showElement(element.parentElement.parentElement);
-                }
-            });
-
-            const recentSubredditsElements = findElements(SELECTORS.recentSubreddits);
-            recentSubredditsElements.forEach(element => {
-                if (currentSettings.hideRecentSubreddits === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-
-            const communitiesElements = findElements(SELECTORS.communities);
-            communitiesElements.forEach(element => {
-                if (currentSettings.hideCommunities === true) {
-                    hideElement(element.parentElement.parentElement);
-                } else {
-                    showElement(element);
-                    showElement(element.parentElement.parentElement);
-                }
-            });
-
-            const allElements = findElements(SELECTORS.all);
-            allElements.forEach(element => {
-                if (currentSettings.hideAll === true) {
-                    hideElement(element);
-                } else {
-                    showElement(element);
-                }
-            });
-        }
-
     };
 
     const loadAndApplyImmediateSettings = () => {
@@ -786,50 +771,6 @@ try {
         setupSearchObserver();
         checkExistingSearchShadowRoots();
     }
-
-    const isPageLoading = () => {
-        return document.readyState === 'loading' ||
-            document.readyState === 'interactive';
-    };
-
-    const isPageFullyLoaded = () => {
-        return document.readyState === 'complete';
-    };
-
-    const areElementsStillLoading = () => {
-        // Check for loading indicators
-        const loadingIndicators = document.querySelectorAll(
-            '[data-loading="true"]',
-            '.loading',
-            '.spinner',
-            '[aria-busy="true"]',
-            'shreddit-async-loader'
-        );
-
-        const expectedElements = Object.values(SELECTORS);
-        const missingElements = expectedElements.some(selector => {
-            const elements = findElements(selector);
-            return elements.length === 0;
-        });
-
-        return loadingIndicators.length > 0 || missingElements;
-    };
-
-    const isNetworkActive = () => {
-        return performance.getEntriesByType('navigation')[0]?.loadEventEnd === 0;
-    };
-
-    const isRedditLoading = () => {
-        const redditLoaders = document.querySelectorAll(
-            'shreddit-async-loader',
-            '[data-testid="loading"]',
-            '.loading-page',
-            'reddit-header-loading'
-        );
-        const appContainer = document.querySelector('shreddit-app, reddit-header-large');
-        return redditLoaders.length > 0 || !appContainer;
-    };
-
 } catch (error) {
     console.error('Content script error:', error);
     console.error('Stack trace:', error.stack);
