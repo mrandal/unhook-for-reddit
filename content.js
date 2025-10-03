@@ -38,6 +38,12 @@ try {
         all: "#all-posts"
     };
 
+    const SHADOW_DOM_SELECTORS = {
+        search: "reddit-search-large",
+        sidebar: "reddit-sidebar-nav",
+        leftTop: "left-nav-top-section"
+    };
+
     let currentSettings = {};
 
     let originalDisplayValues = new Map();
@@ -78,7 +84,6 @@ try {
         },
     ];
 
-    // Check for page redirects early (before page fully loads)
     const checkPageRedirects = () => {
         const currentPath = window.location.pathname;
         const activeRedirects = REDIRECT_MAPPINGS.filter(redirect => redirect.check(currentPath));
@@ -86,14 +91,12 @@ try {
         if (activeRedirects.length > 0) {
             const settingsToCheck = activeRedirects.map(r => r.setting);
 
-            // Use Promise-based approach for better error handling
             browser.storage.sync.get(settingsToCheck)
                 .then((data) => {
                     for (const redirect of activeRedirects) {
                         if (data[redirect.setting] === true) {
                             window.location.replace('https://www.reddit.com/');
-                            // }, 1);
-                            return; // Stop after first redirect
+                            return;
                         }
                     }
                 })
@@ -105,17 +108,14 @@ try {
 
     checkPageRedirects();
 
-    // Helper function to store original display value
     const storeOriginalDisplay = (element) => {
         if (!originalDisplayValues.has(element)) {
-            // Temporarily remove CSS hiding to get the true original display
             const wasVisible = element.classList.contains('unhook-reddit-visible');
             element.classList.add('unhook-reddit-visible');
 
             const computedStyle = window.getComputedStyle(element);
             let originalDisplay = computedStyle.display;
 
-            // If it's still 'none', try some common defaults
             if (originalDisplay === 'none') {
                 const tagName = element.tagName.toLowerCase();
                 if (['div', 'section', 'article', 'aside', 'nav'].includes(tagName)) {
@@ -123,42 +123,33 @@ try {
                 } else if (tagName === 'span') {
                     originalDisplay = 'inline';
                 } else {
-                    originalDisplay = 'block'; // fallback
+                    originalDisplay = 'block';
                 }
             }
 
-            // Restore the visibility state
             if (!wasVisible) {
                 element.classList.remove('unhook-reddit-visible');
             }
 
             originalDisplayValues.set(element, originalDisplay);
-
         }
     };
 
-    // Helper function to hide element (works with CSS !important)
     const hideElement = (element) => {
         storeOriginalDisplay(element);
 
-        // Remove the visible class
         element.classList.remove('unhook-reddit-visible');
-
-        // Remove the data attribute
         element.removeAttribute('data-display');
 
-        // Override any inline styles that might be showing the element
         element.style.removeProperty('display');
         element.style.removeProperty('visibility');
         element.style.removeProperty('opacity');
 
-        // Force hide with !important
         element.style.setProperty('display', 'none', 'important');
         element.style.setProperty('visibility', 'hidden', 'important');
         element.style.setProperty('opacity', '0', 'important');
     };
 
-    // Helper function to check if element contains shadow DOM
     const containsShadowDOM = (element) => {
         const tagName = element.tagName ? element.tagName.toLowerCase() : '';
         const shadowDOMElements = [
@@ -171,77 +162,49 @@ try {
             element.shadowRoot;
     };
 
-    // Helper function to show element immediately (works with CSS !important)
     const showElementImmediate = (element) => {
-        // First, store the original display if we haven't already
         storeOriginalDisplay(element);
 
         const originalDisplay = originalDisplayValues.get(element);
-
-        // Add the visible class to override CSS hiding
         element.classList.add('unhook-reddit-visible');
 
-        // Remove any hiding properties first
         element.style.removeProperty('display');
         element.style.removeProperty('visibility');
         element.style.removeProperty('opacity');
 
-        // Set data attribute for CSS targeting
         if (originalDisplay && originalDisplay !== 'none') {
             element.setAttribute('data-display', originalDisplay);
         } else {
             element.setAttribute('data-display', 'block');
         }
 
-        // Force show with !important - this must override the CSS :not() rules
         const displayValue = originalDisplay && originalDisplay !== 'none' ? originalDisplay : 'block';
         element.style.setProperty('display', displayValue, 'important');
         element.style.setProperty('visibility', 'visible', 'important');
         element.style.setProperty('opacity', '1', 'important');
     };
 
-    // Helper function to show element (with delay for shadow DOM containers)
     const showElement = (element) => {
         if (containsShadowDOM(element)) {
-            // Delay showing elements with shadow DOM to prevent flash
             setTimeout(() => {
                 showElementImmediate(element);
             }, holdTime * 1000);
         } else {
-            // Show regular elements immediately
             showElementImmediate(element);
         }
     };
 
-
-    const getSearchShadowRoot = () => {
-        const search = document.querySelector('reddit-search-large');
-        if (!search || !search.shadowRoot) {
+    const getShadowRoot = (shadowDOMSelector) => {
+        const shadowRoot = document.querySelector(shadowDOMSelector);
+        if (!shadowRoot || !shadowRoot.shadowRoot) {
             return null;
         }
-        return search.shadowRoot;
-    };
-
-    const getSidebarShadowRoot = () => {
-        const sidebar = document.querySelector('reddit-sidebar-nav');
-        if (!sidebar || !sidebar.shadowRoot) {
-            return null;
-        }
-        return sidebar.shadowRoot;
-    };
-
-    const getLeftTopShadowRoot = () => {
-        const leftTop = document.querySelector('left-nav-top-section');
-        if (!leftTop || !leftTop.shadowRoot) {
-            return null;
-        }
-        return leftTop.shadowRoot;
+        return shadowRoot.shadowRoot;
     };
 
     const shadowDOMReadyLoading = () => {
         return getSearchShadowRoot() && getSidebarShadowRoot() && getLeftTopShadowRoot();
     };
-
 
     const findElements = (selectorString) => {
         const selectors = selectorString.split(', ').map(s => s.trim());
@@ -259,9 +222,9 @@ try {
             let found = [];
 
             const shadowRootGetters = [
-                () => getSearchShadowRoot(),
-                () => getSidebarShadowRoot(),
-                () => getLeftTopShadowRoot()
+                () => getShadowRoot(SHADOW_DOM_SELECTORS.search),
+                () => getShadowRoot(SHADOW_DOM_SELECTORS.sidebar),
+                () => getShadowRoot(SHADOW_DOM_SELECTORS.leftTop),
             ];
 
             for (const getter of shadowRootGetters) {
@@ -391,14 +354,9 @@ try {
             const trendingContainerElements = findElements(SELECTORS.trendingContainer);
             trendingContainerElements.forEach(element => {
                 if (currentSettings.hideTrending === true) {
-                    // Remove border classes to hide the horizontal line
                     element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                    // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
-                    // Don't remove unhook-reddit-visible class - let CSS handle the border removal
                 } else {
-                    // Restore the original border classes
                     element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                    // Ensure the visible class is present for proper CSS targeting
                     element.classList.add('unhook-reddit-visible');
                 }
             });
@@ -464,10 +422,7 @@ try {
 
     };
 
-    // Function to load settings synchronously and apply immediately
     const loadAndApplyImmediateSettings = () => {
-
-        // Try to get settings synchronously if possible
         try {
             browser.storage.sync.get(STORAGE_KEYS).then((data) => {
                 currentSettings = {
@@ -510,29 +465,23 @@ try {
         }
     };
 
-    // Listen for storage changes to update settings dynamically
     browser.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'sync') {
-            // Update current settings with normalized boolean values
             Object.keys(changes).forEach(key => {
                 currentSettings[key] = changes[key].newValue === true;
             });
-
             applyVisibilitySettings();
         }
     });
 
-    // Load and apply settings immediately on script load
     loadAndApplyImmediateSettings();
 
     if (document.readyState === 'loading') {
-        // Apply settings again when DOM content is loaded
         document.addEventListener('DOMContentLoaded', () => {
             applyVisibilitySettings();
         });
     }
 
-    // Handle navigation changes to prevent flash
     let currentUrl = window.location.href;
     let isNavigating = false;
 
@@ -540,42 +489,34 @@ try {
         if (!isNavigating) {
             isNavigating = true;
 
-            // Immediately apply settings based on DESTINATION page to prevent flash
             if (currentSettings && Object.keys(currentSettings).length > 0) {
                 let isDestinationSubreddit;
 
                 if (destinationUrl) {
-                    // Use destination URL to determine page type
                     try {
                         const url = new URL(destinationUrl, window.location.origin);
                         isDestinationSubreddit = url.pathname.startsWith('/r/');
-                        // const isDestinationUserPage = url.pathname.startsWith('/user');
-                        // const isDestinationExplorePage = url.pathname.startsWith('/explore');
                     } catch (e) {
                         isDestinationSubreddit = window.location.pathname.startsWith('/r');
                     }
                 } else {
-                    // Fallback to current URL (for back/forward navigation)
                     isDestinationSubreddit = window.location.pathname.startsWith('/r');
                 }
                 const feedElements = findElements(SELECTORS.homeFeed); // They use same selector
 
                 if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
-                    // Going to home page (including /user pages) and home feed should be hidden
                     feedElements.forEach(el => {
                         el.style.setProperty('display', 'none', 'important');
                         el.style.setProperty('visibility', 'hidden', 'important');
                         el.style.setProperty('opacity', '0', 'important');
                     });
                 } else if (isDestinationSubreddit && currentSettings.hideSubredditFeed) {
-                    // Going to subreddit page and subreddit feed should be hidden
                     feedElements.forEach(el => {
                         el.style.setProperty('display', 'none', 'important');
                         el.style.setProperty('visibility', 'hidden', 'important');
                         el.style.setProperty('opacity', '0', 'important');
                     });
                 } else {
-                    // Feed should be visible on destination page - ensure it's not hidden
                     feedElements.forEach(el => {
                         el.style.removeProperty('display');
                         el.style.removeProperty('visibility');
@@ -594,58 +535,49 @@ try {
 
             checkPageRedirects();
 
-            // Immediately apply settings for the new page context
             setTimeout(() => {
                 applyVisibilitySettings();
-            }, 50); // Small delay to let page elements load
+            }, 50);
         }
     };
 
-    // Listen for clicks on links to catch navigation before it starts
     document.addEventListener('click', (event) => {
         const target = event.target.closest('a[href]');
         if (target && target.href && target.href.includes('reddit.com')) {
             handleNavigationStart(target.href); // Pass destination URL
         }
-    }, true); // Use capture phase to catch early
+    }, true);
 
-    // Listen for navigation changes
     const navigationObserver = new MutationObserver(handleNavigation);
     navigationObserver.observe(document, { childList: true, subtree: true });
 
-    // Also listen for popstate (back/forward navigation)
     window.addEventListener('popstate', (event) => {
-        handleNavigationStart(); // No destination URL available for back/forward
-        // setTimeout(handleNavigation, 10);
+        handleNavigationStart();
     });
 
-    // Listen for pushstate/replacestate (programmatic navigation)
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
     history.pushState = function (state, title, url) {
-        handleNavigationStart(url); // Pass destination URL
+        handleNavigationStart(url);
         originalPushState.apply(history, arguments);
         setTimeout(handleNavigation, 10);
     };
 
     history.replaceState = function (state, title, url) {
-        handleNavigationStart(url); // Pass destination URL
+        handleNavigationStart(url);
         originalReplaceState.apply(history, arguments);
         setTimeout(handleNavigation, 10);
     };
 
-    // Also listen for beforeunload to catch navigation attempts
     window.addEventListener('beforeunload', handleNavigationStart);
 
-    // Set up observer for dynamically added elements
     const observer = new MutationObserver((mutations) => {
         let shouldReapply = false;
 
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Check if any of our target selectors are in the added nodes
                     const selectors = Object.values(SELECTORS);
                     selectors.forEach(selector => {
                         if (node.matches && node.matches(selector) ||
@@ -654,13 +586,11 @@ try {
                         }
                     });
 
-                    // Also check for trending container specifically
                     if (node.matches && (node.matches('#reddit-trending-searches-partial-container') ||
                         node.querySelector && node.querySelector('#reddit-trending-searches-partial-container'))) {
                         aggressivelyHideTrending();
                     }
 
-                    // Also check for trending label specifically
                     if (node.matches && (node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
                         node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'))) {
                         aggressivelyHideTrending();
@@ -674,7 +604,6 @@ try {
         }
     });
 
-    // Start observing when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             observer.observe(document.body, { childList: true, subtree: true });
@@ -695,7 +624,6 @@ try {
                 hideElement(element);
             });
 
-            // Handle trending container border classes - use a more flexible selector
             const trendingContainerSelectors = [
                 "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
                 "div[class*='border-b-sm']",
@@ -709,10 +637,7 @@ try {
             }
 
             trendingContainerElements.forEach(element => {
-                // Remove border classes to hide the horizontal line
                 element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                // Keep only the classes we want: border-r-0, border-l-0, border-neutral-border
-                // Ensure the visible class is present for proper CSS targeting
                 element.classList.add('unhook-reddit-visible');
             });
         }
@@ -720,26 +645,22 @@ try {
 
     const setupSearchShadowObserverForRoot = (shadowRoot) => {
         try {
-            // Create observer for the specific shadow root
             const searchObserver = new MutationObserver((mutations) => {
                 let trendingReappeared = false;
 
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.ELEMENT_NODE) {
-                            // Check if the trending container was added
                             if (node.id === 'reddit-trending-searches-partial-container' ||
                                 node.querySelector?.('#reddit-trending-searches-partial-container')) {
                                 trendingReappeared = true;
                             }
 
-                            // Check if the trending label was added
                             if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
                                 node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
                                 trendingReappeared = true;
                             }
 
-                            // Check if the trending container div was added
                             if (node.matches && node.matches('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border') ||
                                 node.querySelector && node.querySelector('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border')) {
                                 trendingReappeared = true;
@@ -749,14 +670,12 @@ try {
                 });
 
                 if (trendingReappeared) {
-                    // Small delay to ensure elements are fully rendered
                     setTimeout(() => {
                         aggressivelyHideTrending();
                     }, 50);
                 }
             });
 
-            // Start observing the shadow root
             searchObserver.observe(shadowRoot, {
                 childList: true,
                 subtree: true,
@@ -777,20 +696,16 @@ try {
             if (searchElement && searchElement.shadowRoot) {
                 const searchShadowRoot = searchElement.shadowRoot;
 
-                // Create observer for the search shadow root
                 const searchObserver = new MutationObserver((mutations) => {
                     let trendingReappeared = false;
-
                     mutations.forEach((mutation) => {
                         mutation.addedNodes.forEach((node) => {
                             if (node.nodeType === Node.ELEMENT_NODE) {
-                                // Check if the trending container was added
                                 if (node.id === 'reddit-trending-searches-partial-container' ||
                                     node.querySelector?.('#reddit-trending-searches-partial-container')) {
                                     trendingReappeared = true;
                                 }
 
-                                // Check if the trending label was added
                                 if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
                                     node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
                                     trendingReappeared = true;
@@ -804,7 +719,6 @@ try {
                     }
                 });
 
-                // Start observing the search shadow root
                 searchObserver.observe(searchShadowRoot, {
                     childList: true,
                     subtree: true,
@@ -820,19 +734,15 @@ try {
         return null;
     };
 
-    // Function to periodically check for search shadow root and set up observer
-    // Monkey-patch attachShadow to detect new shadow DOM creation
     const originalAttachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = function (options) {
         const shadowRoot = originalAttachShadow.call(this, options);
         console.log('ATTACHED SHADOW ROOT:', shadowRoot);
-        // Check if this is a search-related element
         if (this.tagName === 'REDDIT-SEARCH-LARGE' ||
             this.tagName === 'REDDIT-SEARCH' ||
             this.classList.contains('search') ||
             this.getAttribute('data-testid')?.includes('search')) {
 
-            // Set up observer for this specific shadow root
             setTimeout(() => {
                 setupSearchShadowObserverForRoot(shadowRoot);
             }, 100);
@@ -852,14 +762,12 @@ try {
                 }
             }, 1000);
 
-            // Stop trying after 10 seconds
             setTimeout(() => {
                 clearInterval(checkInterval);
             }, 10000);
         }
     };
 
-    // Function to check for existing search shadow roots and set up observers
     const checkExistingSearchShadowRoots = () => {
         const searchElements = document.querySelectorAll('reddit-search-large, reddit-search, [data-testid*="search"]');
         searchElements.forEach(element => {
@@ -879,7 +787,6 @@ try {
         checkExistingSearchShadowRoots();
     }
 
-    // More comprehensive loading detection
     const isPageLoading = () => {
         return document.readyState === 'loading' ||
             document.readyState === 'interactive';
@@ -889,7 +796,6 @@ try {
         return document.readyState === 'complete';
     };
 
-    // Check if specific elements are still loading
     const areElementsStillLoading = () => {
         // Check for loading indicators
         const loadingIndicators = document.querySelectorAll(
@@ -900,7 +806,6 @@ try {
             'shreddit-async-loader'
         );
 
-        // Check for elements that should exist but don't yet
         const expectedElements = Object.values(SELECTORS);
         const missingElements = expectedElements.some(selector => {
             const elements = findElements(selector);
@@ -910,25 +815,18 @@ try {
         return loadingIndicators.length > 0 || missingElements;
     };
 
-    // Detect ongoing network requests
     const isNetworkActive = () => {
-        // Check for fetch/XHR activity (modern approach)
         return performance.getEntriesByType('navigation')[0]?.loadEventEnd === 0;
     };
 
-    // Reddit-specific loading indicators
     const isRedditLoading = () => {
-        // Check for Reddit's loading elements
         const redditLoaders = document.querySelectorAll(
             'shreddit-async-loader',
             '[data-testid="loading"]',
             '.loading-page',
             'reddit-header-loading'
         );
-
-        // Check if main Reddit app hasn't loaded yet
         const appContainer = document.querySelector('shreddit-app, reddit-header-large');
-
         return redditLoaders.length > 0 || !appContainer;
     };
 
