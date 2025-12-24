@@ -5,6 +5,7 @@ try {
 
     const STORAGE_KEYS = [
         "hideHomeFeed",
+        "hideGallery",
         "hideSubredditFeed",
         "hideCommunityHighlights",
         "hideSideBar",
@@ -12,6 +13,7 @@ try {
         "hideRightSidebar",
         "hideRecentPosts",
         "hideSubredditInfo",
+        "hidePopularCommunities",
         "hideSearch",
         "hideTrending",
         "hidePopular",
@@ -25,12 +27,14 @@ try {
 
     const SELECTORS = {
         homeFeed: "shreddit-feed",
+        gallery: "shreddit-gallery-carousel",
         subredditFeed: "shreddit-feed",
         communityHighlights: "community-highlight-carousel",
         comments: "shreddit-comment",
         rightSidebar: "#right-sidebar-contents",
         recentPosts: "recent-posts",
         subredditInfo: '#subreddit-right-rail__partial',
+        popularCommunities: '[aria-label="Popular Communities"]',
         search: "reddit-search-large",
         trending: "#reddit-trending-searches-partial-container",
         trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center",
@@ -252,6 +256,7 @@ try {
             toggleElements(SELECTORS.subredditFeed, currentSettings.hideSubredditFeed);
         }
 
+        toggleElements(SELECTORS.gallery, currentSettings.hideGallery);
         toggleElements(SELECTORS.communityHighlights, currentSettings.hideCommunityHighlights);
         toggleElements(SELECTORS.comments, currentSettings.hideComments);
         toggleElements(SELECTORS.leftSidebar, currentSettings.hideSideBar);
@@ -261,6 +266,7 @@ try {
         if (!currentSettings.hideRightSidebar) {
             toggleElements(SELECTORS.recentPosts, currentSettings.hideRecentPosts);
             toggleElements(SELECTORS.subredditInfo, currentSettings.hideSubredditInfo);
+            toggleElements(SELECTORS.popularCommunities, currentSettings.hidePopularCommunities);
         }
 
         if (!currentSettings.hideSearch) {

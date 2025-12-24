@@ -1,4 +1,5 @@
 shreddit-feed:not(.unhook-reddit-visible),
+shreddit-gallery-carousel:not(.unhook-reddit-visible),
 shreddit-comment:not(.unhook-reddit-visible),
 community-highlight-carousel:not(.unhook-reddit-visible),
 recent-posts:not(.unhook-reddit-visible),
@@ -9,6 +10,7 @@ div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neut
 #left-sidebar:not(.unhook-reddit-visible),
 #right-sidebar-contents:not(.unhook-reddit-visible),
 #subreddit-right-rail__partial:not(.unhook-reddit-visible),
+[aria-label="Popular Communities"]:not(.unhook-reddit-visible),
 #popular-posts:not(.unhook-reddit-visible),
 #explore-communities:not(.unhook-reddit-visible),
 #multireddits_section:not(.unhook-reddit-visible),

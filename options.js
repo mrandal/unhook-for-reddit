@@ -4,6 +4,7 @@ if (typeof browser === "undefined") {
 
 const STORAGE_KEYS = [
     "hideHomeFeed",
+    "hideGallery",
     "hideSubredditFeed",
     "hideCommunityHighlights",
     "hideSideBar",
@@ -11,6 +12,7 @@ const STORAGE_KEYS = [
     "hideRightSidebar",
     "hideRecentPosts",
     "hideSubredditInfo",
+    "hidePopularCommunities",
     "hideSearch",
     "hideTrending",
     "hidePopular",
@@ -24,6 +26,7 @@ const STORAGE_KEYS = [
 
 const LOCK_STORAGE_KEYS = [
     "lock_hideHomeFeed",
+    "lock_hideGallery",
     "lock_hideSubredditFeed",
     "lock_hideCommunityHighlights",
     "lock_hideSideBar",
@@ -31,6 +34,7 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideRightSidebar",
     "lock_hideRecentPosts",
     "lock_hideSubredditInfo",
+    "lock_hidePopularCommunities",
     "lock_hideSearch",
     "lock_hideTrending",
     "lock_hidePopular",
@@ -45,6 +49,7 @@ const LOCK_STORAGE_KEYS = [
 const getSettingDisplayName = (settingId) => {
     const displayNames = {
         hideHomeFeed: "Hide Home Feed",
+        hideGallery: "Hide Gallery",
         hideSubredditFeed: "Hide Subreddit Feed",
         hideCommunityHighlights: "Hide Community Highlights",
         hideSideBar: "Hide Left Sidebar",
@@ -52,6 +57,7 @@ const getSettingDisplayName = (settingId) => {
         hideRightSidebar: "Hide Right Sidebar",
         hideRecentPosts: "Hide Recent Posts",
         hideSubredditInfo: "Hide Subreddit Info",
+        hidePopularCommunities: "Hide Popular Communities",
         hideSearch: "Hide Search",
         hideTrending: "Hide Trending Searches",
         hidePopular: "Hide Popular",
@@ -66,6 +72,7 @@ const getSettingDisplayName = (settingId) => {
 
 const darkMode = document.getElementById('darkMode');
 const hideHomeFeed = document.getElementById('hideHomeFeed');
+const hideGallery = document.getElementById('hideGallery');
 const hideSubredditFeed = document.getElementById('hideSubredditFeed');
 const hideCommunityHighlights = document.getElementById('hideCommunityHighlights');
 const hideSideBar = document.getElementById('hideSideBar');
@@ -73,6 +80,7 @@ const hideComments = document.getElementById('hideComments');
 const hideRightSidebar = document.getElementById('hideRightSidebar');
 const hideRecentPosts = document.getElementById('hideRecentPosts');
 const hideSubredditInfo = document.getElementById('hideSubredditInfo');
+const hidePopularCommunities = document.getElementById('hidePopularCommunities');
 const hideSearch = document.getElementById('hideSearch');
 const hideTrending = document.getElementById('hideTrending');
 const hidePopular = document.getElementById('hidePopular');
@@ -100,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     browser.storage.sync.get(STORAGE_KEYS, (data = {}) => {
         darkMode.checked = data.darkMode || false;
         hideHomeFeed.checked = data.hideHomeFeed || false;
+        hideGallery.checked = data.hideGallery || false;
         hideSubredditFeed.checked = data.hideSubredditFeed || false;
         hideCommunityHighlights.checked = data.hideCommunityHighlights || false;
         hideSideBar.checked = data.hideSideBar || false;
@@ -107,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideRightSidebar.checked = data.hideRightSidebar || false;
         hideRecentPosts.checked = data.hideRecentPosts || false;
         hideSubredditInfo.checked = data.hideSubredditInfo || false;
+        hidePopularCommunities.checked = data.hidePopularCommunities || false;
         hideSearch.checked = data.hideSearch || false;
         hideTrending.checked = data.hideTrending || false;
         hidePopular.checked = data.hidePopular || false;
@@ -127,6 +137,7 @@ const saveSettings = () => {
     const settings = {
         darkMode: darkMode.checked,
         hideHomeFeed: hideHomeFeed.checked,
+        hideGallery: hideGallery.checked,
         hideSubredditFeed: hideSubredditFeed.checked,
         hideCommunityHighlights: hideCommunityHighlights.checked,
         hideSideBar: hideSideBar.checked,
@@ -134,6 +145,7 @@ const saveSettings = () => {
         hideRightSidebar: hideRightSidebar.checked,
         hideRecentPosts: hideRecentPosts.checked,
         hideSubredditInfo: hideSubredditInfo.checked,
+        hidePopularCommunities: hidePopularCommunities.checked,
         hideSearch: hideSearch.checked,
         hideTrending: hideTrending.checked,
         hidePopular: hidePopular.checked,
@@ -170,7 +182,7 @@ const handleDarkModeToggle = () => {
 
 darkMode.addEventListener('change', handleDarkModeToggle);
 
-[hideHomeFeed, hideSubredditFeed, hideCommunityHighlights, hideComments, hideRecentPosts, hideSubredditInfo, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
+[hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideComments, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
     setting.addEventListener('change', saveSettings);
 });
 
@@ -180,8 +192,8 @@ hideRightSidebar.addEventListener('change', handleRightSidebarToggle);
 
 const addImmediateLockUpdates = () => {
     const settings = [
-        hideHomeFeed, hideSubredditFeed, hideCommunityHighlights, hideSideBar, hideComments,
-        hideRightSidebar, hideRecentPosts, hideSubredditInfo, hideSearch, hideTrending, hidePopular, hideExplore,
+        hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideSideBar, hideComments,
+        hideRightSidebar, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideSearch, hideTrending, hidePopular, hideExplore,
         hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll
     ];
 
