@@ -35,22 +35,6 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideAll"
 ];
 
-const OPTION_IDS = {
-    hideHomeFeed: "hideHomeFeed",
-    hideSubredditFeed: "hideSubredditFeed",
-    hideSideBar: "hideSideBar",
-    hideComments: "hideComments",
-    hideRecentPosts: "hideRecentPosts",
-    hideSearch: "hideSearch",
-    hideTrending: "hideTrending",
-    hidePopular: "hidePopular",
-    hideExplore: "hideExplore",
-    hideCustomFeeds: "hideCustomFeeds",
-    hideRecentSubreddits: "hideRecentSubreddits",
-    hideCommunities: "hideCommunities",
-    hideAll: "hideAll",
-    darkMode: "darkMode"
-};
 
 const getSettingDisplayName = (settingId) => {
     const displayNames = {
@@ -66,46 +50,37 @@ const getSettingDisplayName = (settingId) => {
         hideCustomFeeds: "Hide Custom Feeds",
         hideRecentSubreddits: "Hide Recent Subreddits",
         hideCommunities: "Hide Communities",
-        hideAll: "Hide r/All",
+        hideAll: "Hide r/All"
     };
-
     return displayNames[settingId] || settingId;
 };
 
-const darkMode = document.getElementById(OPTION_IDS.darkMode);
-const hideHomeFeed = document.getElementById(OPTION_IDS.hideHomeFeed);
-const hideSubredditFeed = document.getElementById(OPTION_IDS.hideSubredditFeed);
-const hideSideBar = document.getElementById(OPTION_IDS.hideSideBar);
-const hideComments = document.getElementById(OPTION_IDS.hideComments);
-const hideRecentPosts = document.getElementById(OPTION_IDS.hideRecentPosts);
-const hideSearch = document.getElementById(OPTION_IDS.hideSearch);
-const hideTrending = document.getElementById(OPTION_IDS.hideTrending);
-const hidePopular = document.getElementById(OPTION_IDS.hidePopular);
-const hideExplore = document.getElementById(OPTION_IDS.hideExplore);
-const hideCustomFeeds = document.getElementById(OPTION_IDS.hideCustomFeeds);
-const hideRecentSubreddits = document.getElementById(OPTION_IDS.hideRecentSubreddits);
-const hideCommunities = document.getElementById(OPTION_IDS.hideCommunities);
-const hideAll = document.getElementById(OPTION_IDS.hideAll);
+const darkMode = document.getElementById('darkMode');
+const hideHomeFeed = document.getElementById('hideHomeFeed');
+const hideSubredditFeed = document.getElementById('hideSubredditFeed');
+const hideSideBar = document.getElementById('hideSideBar');
+const hideComments = document.getElementById('hideComments');
+const hideRecentPosts = document.getElementById('hideRecentPosts');
+const hideSearch = document.getElementById('hideSearch');
+const hideTrending = document.getElementById('hideTrending');
+const hidePopular = document.getElementById('hidePopular');
+const hideExplore = document.getElementById('hideExplore');
+const hideCustomFeeds = document.getElementById('hideCustomFeeds');
+const hideRecentSubreddits = document.getElementById('hideRecentSubreddits');
+const hideCommunities = document.getElementById('hideCommunities');
+const hideAll = document.getElementById('hideAll');
 
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
 const searchSubOptions = document.querySelectorAll('.search-sub-option');
 
 const updateSubOptions = (subOptions, isHidden) => {
     subOptions.forEach(container => {
-        if (isHidden) {
-            container.classList.add('disabled');
-        } else {
-            container.classList.remove('disabled');
-        }
+        container.classList.toggle('disabled', isHidden);
     });
 };
 
 const applyDarkMode = (isDark) => {
-    if (isDark) {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
+    document.body.classList.toggle('dark-mode', isDark);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -146,9 +121,8 @@ const saveSettings = () => {
         hideCustomFeeds: hideCustomFeeds.checked,
         hideRecentSubreddits: hideRecentSubreddits.checked,
         hideCommunities: hideCommunities.checked,
-        hideAll: hideAll.checked,
+        hideAll: hideAll.checked
     };
-
     browser.storage.sync.set(settings).catch((error) => {
         console.error('Error saving settings:', error);
     });
@@ -170,12 +144,14 @@ const handleDarkModeToggle = () => {
 };
 
 darkMode.addEventListener('change', handleDarkModeToggle);
-for (const setting of [hideHomeFeed, hideSubredditFeed, hideComments, hideRecentPosts, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll]) {
+
+[hideHomeFeed, hideSubredditFeed, hideComments, hideRecentPosts, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
     setting.addEventListener('change', saveSettings);
-}
-for (const setting of [hideSideBar, hideSearch]) {
+});
+
+[hideSideBar, hideSearch].forEach(setting => {
     setting.addEventListener('change', handleSidebarToggle);
-}
+});
 
 const addImmediateLockUpdates = () => {
     const settings = [
@@ -186,13 +162,10 @@ const addImmediateLockUpdates = () => {
 
     settings.forEach(setting => {
         setting.addEventListener('change', () => {
-            const settingId = setting.id;
-            const lockButton = document.querySelector(`[data-setting="${settingId}"]`);
-
+            const lockButton = document.querySelector(`[data-setting="${setting.id}"]`);
             if (lockButton) {
-                const isEnabled = setting.checked;
                 const isLocked = lockButton.classList.contains('state-locked');
-                updateLockButtonState(lockButton, settingId, isEnabled, isLocked);
+                updateLockButtonState(lockButton, setting.id, setting.checked, isLocked);
             }
         });
     });
@@ -226,15 +199,9 @@ const updateLockButtonState = (button, settingId, isEnabled, isLocked) => {
 const handleLockButtonClick = async (button, settingId) => {
     const isEnabled = document.getElementById(settingId).checked;
     const isLocked = button.classList.contains('state-locked');
-    if (isLocked) {
-        return;
-    }
+    if (isLocked) return;
     if (!isEnabled) {
-        try {
-            alert('You can only lock a setting when it is enabled (toggled on).');
-        } catch (e) {
-            console.log('Alert blocked by browser, continuing with functionality');
-        }
+        alert('You can only lock a setting when it is enabled (toggled on).');
         return;
     }
     showConfirmModal(settingId, button);
@@ -246,25 +213,21 @@ const showConfirmModal = (settingId, lockButton) => {
     settingNameSpan.textContent = getSettingDisplayName(settingId);
     modal.classList.add('show');
     modal.dataset.lockButton = lockButton.dataset.setting;
+
     const cancelBtn = document.getElementById('cancelLockBtn');
     const confirmBtn = document.getElementById('confirmLockBtn');
     cancelBtn.replaceWith(cancelBtn.cloneNode(true));
     confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-    const newCancelBtn = document.getElementById('cancelLockBtn');
-    const newConfirmBtn = document.getElementById('confirmLockBtn');
-    newCancelBtn.addEventListener('click', () => hideConfirmModal());
-    newConfirmBtn.addEventListener('click', () => confirmLockAction(modal));
+
+    document.getElementById('cancelLockBtn').addEventListener('click', () => hideConfirmModal());
+    document.getElementById('confirmLockBtn').addEventListener('click', () => confirmLockAction(modal));
 
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            hideConfirmModal();
-        }
+        if (e.target === modal) hideConfirmModal();
     });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('show')) {
-            hideConfirmModal();
-        }
+        if (e.key === 'Escape' && modal.classList.contains('show')) hideConfirmModal();
     });
 };
 
@@ -276,17 +239,15 @@ const hideConfirmModal = () => {
 const confirmLockAction = async (modal) => {
     const settingId = modal.dataset.lockButton;
     const lockButton = document.querySelector(`[data-setting="${settingId}"]`);
-
     try {
-        const lockKey = `lock_${settingId}`;
-        await browser.storage.sync.set({ [lockKey]: true });
+        await browser.storage.sync.set({ [`lock_${settingId}`]: true });
         updateLockButtonState(lockButton, settingId, true, true);
         const toggle = document.getElementById(settingId);
         toggle.disabled = true;
         toggle.checked = true;
-        hideConfirmModal();
     } catch (error) {
         console.error('Failed to lock setting:', error);
+    } finally {
         hideConfirmModal();
     }
 };
@@ -300,7 +261,6 @@ const initializeLockButtons = async () => {
             const isLocked = lockData[`lock_${settingId}`] || false;
 
             updateLockButtonState(button, settingId, isEnabled, isLocked);
-
             button.addEventListener('click', () => handleLockButtonClick(button, settingId));
 
             if (isLocked) {
@@ -317,12 +277,10 @@ const initializeLockButtons = async () => {
 const updateAllLockButtonStates = async () => {
     try {
         const lockData = await browser.storage.sync.get(LOCK_STORAGE_KEYS);
-
         lockButtons.forEach(button => {
             const settingId = button.getAttribute('data-setting');
             const isEnabled = document.getElementById(settingId).checked;
             const isLocked = lockData[`lock_${settingId}`] || false;
-
             updateLockButtonState(button, settingId, isEnabled, isLocked);
         });
     } catch (error) {
@@ -338,9 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const originalSaveSettings = saveSettings;
-saveSettings = () => {
+const wrappedSaveSettings = () => {
     originalSaveSettings();
-    setTimeout(() => {
-        updateAllLockButtonStates();
-    }, 50);
+    setTimeout(() => updateAllLockButtonStates(), 50);
 };
+saveSettings = wrappedSaveSettings;
