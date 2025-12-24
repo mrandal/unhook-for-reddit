@@ -9,7 +9,10 @@ try {
         "hideSubredditFeed",
         "hideCommunityHighlights",
         "hideSideBar",
+        "hideGames",
         "hideComments",
+        "hideUpvotes",
+        "hideUpvoteCount",
         "hideRightSidebar",
         "hideRecentPosts",
         "hideSubredditInfo",
@@ -31,6 +34,9 @@ try {
         subredditFeed: "shreddit-feed",
         communityHighlights: "community-highlight-carousel",
         comments: "shreddit-comment",
+        commentActionRow: "shreddit-comment-action-row",
+        upvotes: '[slot="vote-button"]',
+        upvoteCount: 'faceplate-number',
         rightSidebar: "#right-sidebar-contents",
         recentPosts: "recent-posts",
         subredditInfo: '#subreddit-right-rail__partial',
@@ -40,6 +46,7 @@ try {
         trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center",
         trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
         leftSidebar: "#left-sidebar",
+        games: "games-section-badge-controller",
         popular: "#popular-posts",
         explore: "#explore-communities",
         customFeeds: "#multireddits_section",
@@ -263,6 +270,10 @@ try {
         toggleElements(SELECTORS.rightSidebar, currentSettings.hideRightSidebar);
         toggleElements(SELECTORS.search, currentSettings.hideSearch);
 
+        if (!currentSettings.hideComments) {
+            applyUpvoteSettings();
+        }
+
         if (!currentSettings.hideRightSidebar) {
             toggleElements(SELECTORS.recentPosts, currentSettings.hideRecentPosts);
             toggleElements(SELECTORS.subredditInfo, currentSettings.hideSubredditInfo);
@@ -283,6 +294,7 @@ try {
         }
 
         if (!currentSettings.hideSideBar) {
+            toggleElements(SELECTORS.games, currentSettings.hideGames);
             toggleElements(SELECTORS.popular, currentSettings.hidePopular);
             toggleElements(SELECTORS.explore, currentSettings.hideExplore);
             toggleElements(SELECTORS.recentSubreddits, currentSettings.hideRecentSubreddits);
@@ -298,6 +310,30 @@ try {
                 currentSettings.hideCommunities ? hideElement(parent) : showElement(parent);
             });
         }
+    };
+
+    const applyUpvoteSettings = () => {
+        const actionRows = findElements(SELECTORS.commentActionRow);
+        actionRows.forEach(actionRow => {
+            if (actionRow.shadowRoot) {
+                const upvoteButtons = actionRow.shadowRoot.querySelectorAll(SELECTORS.upvotes);
+                upvoteButtons.forEach(button => {
+                    if (currentSettings.hideUpvotes) {
+                        hideElement(button);
+                    } else {
+                        showElement(button);
+                        const countElements = button.querySelectorAll(SELECTORS.upvoteCount);
+                        countElements.forEach(countElement => {
+                            if (currentSettings.hideUpvoteCount) {
+                                hideElement(countElement);
+                            } else {
+                                showElementImmediate(countElement);
+                            }
+                        });
+                    }
+                });
+            }
+        });
     };
 
     const loadAndApplyImmediateSettings = () => {
@@ -415,6 +451,7 @@ try {
 
     const observer = new MutationObserver((mutations) => {
         let shouldReapply = false;
+        let shouldReapplyUpvotes = false;
 
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
@@ -425,6 +462,11 @@ try {
                             shouldReapply = true;
                         }
                     });
+
+                    if ((node.matches && node.matches(SELECTORS.commentActionRow)) ||
+                        (node.querySelector && node.querySelector(SELECTORS.commentActionRow))) {
+                        shouldReapplyUpvotes = true;
+                    }
 
                     if ((node.matches && (node.matches('#reddit-trending-searches-partial-container') ||
                         node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'))) ||
@@ -438,6 +480,8 @@ try {
 
         if (shouldReapply) {
             applyVisibilitySettings();
+        } else if (shouldReapplyUpvotes && !currentSettings.hideComments) {
+            setTimeout(() => applyUpvoteSettings(), 100);
         }
     });
 

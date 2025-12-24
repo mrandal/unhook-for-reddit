@@ -114,6 +114,24 @@
         <!-- Indented sidebar sub-options -->
         <div class="toggle-container indented sidebar-sub-option">
             <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideGames"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Games</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideGames" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <div class="lock-section">
                 <button type="button" class="lock-button" data-setting="hidePopular"
                     title="Click to permanently lock this setting">
                     <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
@@ -232,6 +250,43 @@
                     <span>Hide Comments</span>
                     <div class="toggle-switch">
                         <input type="checkbox" id="hideComments" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Indented comments sub-options -->
+        <div class="toggle-container indented comments-sub-option">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideUpvotes"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Upvotes</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideUpvotes" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented upvotes-sub-option" style="margin-left: 2rem;">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideUpvoteCount"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Upvote Count</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideUpvoteCount" class="toggle-input">
                         <span class="toggle-slider"></span>
                     </div>
                 </label>

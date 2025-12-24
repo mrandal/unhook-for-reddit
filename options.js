@@ -8,7 +8,10 @@ const STORAGE_KEYS = [
     "hideSubredditFeed",
     "hideCommunityHighlights",
     "hideSideBar",
+    "hideGames",
     "hideComments",
+    "hideUpvotes",
+    "hideUpvoteCount",
     "hideRightSidebar",
     "hideRecentPosts",
     "hideSubredditInfo",
@@ -30,7 +33,10 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideSubredditFeed",
     "lock_hideCommunityHighlights",
     "lock_hideSideBar",
+    "lock_hideGames",
     "lock_hideComments",
+    "lock_hideUpvotes",
+    "lock_hideUpvoteCount",
     "lock_hideRightSidebar",
     "lock_hideRecentPosts",
     "lock_hideSubredditInfo",
@@ -53,7 +59,10 @@ const getSettingDisplayName = (settingId) => {
         hideSubredditFeed: "Hide Subreddit Feed",
         hideCommunityHighlights: "Hide Community Highlights",
         hideSideBar: "Hide Left Sidebar",
+        hideGames: "Hide Games",
         hideComments: "Hide Comments",
+        hideUpvotes: "Hide Upvotes",
+        hideUpvoteCount: "Hide Upvote Count",
         hideRightSidebar: "Hide Right Sidebar",
         hideRecentPosts: "Hide Recent Posts",
         hideSubredditInfo: "Hide Subreddit Info",
@@ -76,7 +85,10 @@ const hideGallery = document.getElementById('hideGallery');
 const hideSubredditFeed = document.getElementById('hideSubredditFeed');
 const hideCommunityHighlights = document.getElementById('hideCommunityHighlights');
 const hideSideBar = document.getElementById('hideSideBar');
+const hideGames = document.getElementById('hideGames');
 const hideComments = document.getElementById('hideComments');
+const hideUpvotes = document.getElementById('hideUpvotes');
+const hideUpvoteCount = document.getElementById('hideUpvoteCount');
 const hideRightSidebar = document.getElementById('hideRightSidebar');
 const hideRecentPosts = document.getElementById('hideRecentPosts');
 const hideSubredditInfo = document.getElementById('hideSubredditInfo');
@@ -93,6 +105,8 @@ const hideAll = document.getElementById('hideAll');
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
 const searchSubOptions = document.querySelectorAll('.search-sub-option');
 const rightSidebarSubOptions = document.querySelectorAll('.right-sidebar-sub-option');
+const commentsSubOptions = document.querySelectorAll('.comments-sub-option');
+const upvotesSubOptions = document.querySelectorAll('.upvotes-sub-option');
 
 const updateSubOptions = (subOptions, isHidden) => {
     subOptions.forEach(container => {
@@ -112,7 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
         hideSubredditFeed.checked = data.hideSubredditFeed || false;
         hideCommunityHighlights.checked = data.hideCommunityHighlights || false;
         hideSideBar.checked = data.hideSideBar || false;
+        hideGames.checked = data.hideGames || false;
         hideComments.checked = data.hideComments || false;
+        hideUpvotes.checked = data.hideUpvotes || false;
+        hideUpvoteCount.checked = data.hideUpvoteCount || false;
         hideRightSidebar.checked = data.hideRightSidebar || false;
         hideRecentPosts.checked = data.hideRecentPosts || false;
         hideSubredditInfo.checked = data.hideSubredditInfo || false;
@@ -130,6 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSubOptions(sidebarSubOptions, hideSideBar.checked);
         updateSubOptions(searchSubOptions, hideSearch.checked);
         updateSubOptions(rightSidebarSubOptions, hideRightSidebar.checked);
+        updateSubOptions(commentsSubOptions, hideComments.checked);
+        updateSubOptions(upvotesSubOptions, hideUpvotes.checked);
     });
 });
 
@@ -141,7 +160,10 @@ const saveSettings = () => {
         hideSubredditFeed: hideSubredditFeed.checked,
         hideCommunityHighlights: hideCommunityHighlights.checked,
         hideSideBar: hideSideBar.checked,
+        hideGames: hideGames.checked,
         hideComments: hideComments.checked,
+        hideUpvotes: hideUpvotes.checked,
+        hideUpvoteCount: hideUpvoteCount.checked,
         hideRightSidebar: hideRightSidebar.checked,
         hideRecentPosts: hideRecentPosts.checked,
         hideSubredditInfo: hideSubredditInfo.checked,
@@ -175,6 +197,16 @@ const handleRightSidebarToggle = () => {
     saveSettings();
 };
 
+const handleCommentsToggle = () => {
+    updateSubOptions(commentsSubOptions, hideComments.checked);
+    saveSettings();
+};
+
+const handleUpvotesToggle = () => {
+    updateSubOptions(upvotesSubOptions, hideUpvotes.checked);
+    saveSettings();
+};
+
 const handleDarkModeToggle = () => {
     applyDarkMode(darkMode.checked);
     saveSettings();
@@ -182,17 +214,19 @@ const handleDarkModeToggle = () => {
 
 darkMode.addEventListener('change', handleDarkModeToggle);
 
-[hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideComments, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
+[hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideGames, hideUpvoteCount, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
     setting.addEventListener('change', saveSettings);
 });
 
 hideSideBar.addEventListener('change', handleSidebarToggle);
 hideSearch.addEventListener('change', handleSearchToggle);
 hideRightSidebar.addEventListener('change', handleRightSidebarToggle);
+hideComments.addEventListener('change', handleCommentsToggle);
+hideUpvotes.addEventListener('change', handleUpvotesToggle);
 
 const addImmediateLockUpdates = () => {
     const settings = [
-        hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideSideBar, hideComments,
+        hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideSideBar, hideGames, hideComments, hideUpvotes, hideUpvoteCount,
         hideRightSidebar, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideSearch, hideTrending, hidePopular, hideExplore,
         hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll
     ];
