@@ -9,18 +9,29 @@ body {
     overflow: hidden;
 }
 
-h2 {
-    color: #333;
-    margin: 0 0 15px 0;
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     padding: 15px;
-    text-align: center;
     background: white;
     border-bottom: 1px solid #e0e0e0;
+}
+
+.header-logo {
+    width: 32px;
+    height: 32px;
+}
+
+h2 {
+    color: #333;
+    margin: 0;
     font-size: 18px;
 }
 
 .options-container {
-    height: calc(100% - 60px);
+    height: calc(100% - 63px);
     overflow-y: auto;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -63,6 +74,12 @@ h2 {
     margin-bottom: 6px;
     background: #f8f9fa;
     border-left: 3px solid #e0e0e0;
+}
+
+.toggle-container.indented[style*="margin-left"] {
+    margin-left: 40px !important;
+    background: #f0f1f2;
+    border-left: 3px solid #d0d0d0;
 }
 
 .toggle-container.disabled {
@@ -256,10 +273,13 @@ body.dark-mode {
     /* overflow-y: auto; */
 }
 
-body.dark-mode h2 {
-    color: #ffffff;
+body.dark-mode .header {
     background: #2d2d2d;
     border-bottom: 1px solid #404040;
+}
+
+body.dark-mode h2 {
+    color: #ffffff;
 }
 
 body.dark-mode .toggle-container {
@@ -274,6 +294,11 @@ body.dark-mode .toggle-container:hover {
 body.dark-mode .toggle-container.indented {
     background: #252525;
     border-left: 3px solid #404040;
+}
+
+body.dark-mode .toggle-container.indented[style*="margin-left"] {
+    background: #1a1a1a;
+    border-left: 3px solid #353535;
 }
 
 body.dark-mode .lock-section {
