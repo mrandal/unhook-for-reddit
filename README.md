@@ -19,21 +19,53 @@ Edge: [https://microsoftedge.microsoft.com/addons/detail/unhook-for-reddit/kfikd
 
 ## Settings
 
-- **Dark Mode**: Toggle the options UI between light and dark themes
+### Main Feed Controls
 - **Hide Home Feed**: Removes the main feed from Reddit's home page
+- **Hide Gallery**: Removes gallery carousels
 - **Hide Subreddit Feed**: Removes posts from subreddit pages
+- **Hide Community Highlights**: Removes community highlight carousels
+
+### Sidebar Controls
+
+#### Left Sidebar
 - **Hide Left Sidebar**: Removes the entire left navigation sidebar
-- **Sidebar Sub-options**: When "Hide Left Sidebar" is enabled, these options are disabled:
+  - When enabled, these sub-options are disabled:
   - **Hide Popular**: Hides the Popular button and redirects from `/r/popular`
   - **Hide Explore**: Hides the Explore button and redirects from `/explore`
   - **Hide r/All**: Hides the All button and redirects from `/r/all`
+  - **Hide Games**: Hides the Games section
   - **Hide Custom Feeds**: Hides custom feed sections
   - **Hide Recent Subreddits**: Hides recently visited subreddits
   - **Hide Communities**: Hides community sections
+
+#### Right Sidebar
+- **Hide Right Sidebar**: Removes the right sidebar
+  - When enabled, these sub-options are disabled:
+  - **Hide Recent Posts**: Hides recent/top posts widget
+  - **Hide Subreddit Info**: Hides subreddit information panel
+  - **Hide Popular Communities**: Hides popular communities widget
+
+### Content Controls
 - **Hide Comments**: Removes comment sections from posts
-- **Hide Recent Posts**: Hides recent/top posts sections
+  - When enabled, these sub-options are disabled:
+  - **Hide Comment Upvotes**: Hides upvote buttons on comments
+    - **Hide Upvote Count Only**: Hides just the vote count, keeping the button visible
+
+### Search Controls
 - **Hide Search**: Hides the search bar
+  - When enabled, this sub-option is disabled:
   - **Hide Trending Searches**: Removes trending searches from the search bar
+
+### Appearance
+- **Dark Mode**: Toggle the options UI between light and dark themes
+
+## Lock Feature
+
+Each setting includes a lock button that allows you to permanently lock that setting. Once locked:
+- The setting cannot be changed without reinstalling the extension
+- The toggle becomes disabled
+- The lock icon changes to red
+- This is useful for maintaining focus and preventing yourself from disabling important blocks
 
 ## License
 
