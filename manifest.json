@@ -37,6 +37,10 @@
       "strict_min_version": "126.0"
     }
   },
+  "data_collection_permissions": {
+    "data_types": [],
+    "description": "This extension does not collect any user data. All settings are stored locally on your device."
+  },
   "icons": {
     "16": "assets/unhook-reddit-16.png",
     "48": "assets/unhook-reddit-48.png",
