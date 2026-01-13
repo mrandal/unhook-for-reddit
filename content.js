@@ -63,6 +63,107 @@ try {
         leftTop: "left-nav-top-section"
     };
 
+    const ELEMENT_CONFIGS = [
+        {
+            key: 'homeFeed',
+            setting: 'hideHomeFeed',
+            condition: (pageContext) => !pageContext.isSubredditPage,
+            shouldHide: (settings, pageContext) =>
+                !pageContext.isUserPage && !pageContext.isExplorePage && settings.hideHomeFeed === true
+        },
+        {
+            key: 'subredditFeed',
+            setting: 'hideSubredditFeed',
+            condition: (pageContext) => pageContext.isSubredditPage,
+            shouldHide: (settings) => settings.hideSubredditFeed === true
+        },
+        {
+            key: 'comments',
+            setting: 'hideComments',
+            shouldHide: (settings) => settings.hideComments === true
+        },
+        {
+            key: 'leftSidebar',
+            setting: 'hideSideBar',
+            shouldHide: (settings) => settings.hideSideBar === true
+        },
+        {
+            key: 'recentPosts',
+            setting: 'hideRecentPosts',
+            shouldHide: (settings) => settings.hideRecentPosts === true
+        },
+        {
+            key: 'search',
+            setting: 'hideSearch',
+            shouldHide: (settings) => settings.hideSearch === true
+        },
+        {
+            key: 'trending',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            shouldHide: (settings) => settings.hideTrending === true
+        },
+        {
+            key: 'trendingLabel',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            shouldHide: (settings) => settings.hideTrending === true
+        },
+        {
+            key: 'trendingContainer',
+            setting: 'hideTrending',
+            condition: (pageContext, settings) => !settings.hideSearch,
+            customHandler: (element, shouldHide) => {
+                if (shouldHide) {
+                    element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                } else {
+                    element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                    element.classList.add('unhook-reddit-visible');
+                }
+            }
+        },
+        {
+            key: 'popular',
+            setting: 'hidePopular',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hidePopular === true
+        },
+        {
+            key: 'explore',
+            setting: 'hideExplore',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideExplore === true
+        },
+        {
+            key: 'customFeeds',
+            setting: 'hideCustomFeeds',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideCustomFeeds === true,
+            targetElement: (element) => element.parentElement.parentElement,
+            showExtraElements: (element) => [element, element.parentElement.parentElement]
+        },
+        {
+            key: 'recentSubreddits',
+            setting: 'hideRecentSubreddits',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideRecentSubreddits === true
+        },
+        {
+            key: 'communities',
+            setting: 'hideCommunities',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideCommunities === true,
+            targetElement: (element) => element.parentElement.parentElement,
+            showExtraElements: (element) => [element, element.parentElement.parentElement]
+        },
+        {
+            key: 'all',
+            setting: 'hideAll',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideAll === true
+        }
+    ];
+
     let currentSettings = {};
     let originalDisplayValues = new Map();
     const holdTime = 0.2;
@@ -71,17 +172,14 @@ try {
         {
             check: (path) => path.startsWith('/r/popular'),
             setting: 'hidePopular',
-            message: 'Popular page detected, redirecting to home...'
         },
         {
             check: (path) => path === '/explore' || path.startsWith('/explore/'),
             setting: 'hideExplore',
-            message: 'Explore page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideAll',
-            message: 'All page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/notifications'),
@@ -91,17 +189,14 @@ try {
         {
             check: (path) => path.startsWith('/r/popular'),
             setting: 'hideSideBar',
-            message: 'Popular page detected (sidebar hidden), redirecting to home...'
         },
         {
             check: (path) => path === '/explore' || path.startsWith('/explore/'),
             setting: 'hideSideBar',
-            message: 'Explore page detected (sidebar hidden), redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideSideBar',
-            message: 'All page detected (sidebar hidden), redirecting to home...'
         },
     ];
 
@@ -245,9 +340,11 @@ try {
     };
 
     const applyVisibilitySettings = () => {
-        const isSubredditPage = window.location.pathname.startsWith('/r');
-        const isUserPage = window.location.pathname.startsWith('/user');
-        const isExplorePage = window.location.pathname.startsWith('/explore');
+        const pageContext = {
+            isSubredditPage: window.location.pathname.startsWith('/r'),
+            isUserPage: window.location.pathname.startsWith('/user'),
+            isExplorePage: window.location.pathname.startsWith('/explore')
+        };
 
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
             Object.values(SELECTORS).forEach(selectorString => {
@@ -256,91 +353,32 @@ try {
             return;
         }
 
-        const toggleElements = (selector, shouldHide) => {
-            findElements(selector).forEach(element => {
-                shouldHide ? hideElement(element) : showElement(element);
-            });
-        };
+        ELEMENT_CONFIGS.forEach(config => {
+            if (config.condition && !config.condition(pageContext, currentSettings)) {
+                return;
+            }
 
-        if (!isSubredditPage) {
-            toggleElements(SELECTORS.homeFeed, !isUserPage && !isExplorePage && currentSettings.hideHomeFeed);
-        }
+            const elements = findElements(SELECTORS[config.key]);
 
-        if (isSubredditPage) {
-            toggleElements(SELECTORS.subredditFeed, currentSettings.hideSubredditFeed);
-        }
-
-        toggleElements(SELECTORS.gallery, currentSettings.hideGallery);
-        toggleElements(SELECTORS.communityHighlights, currentSettings.hideCommunityHighlights);
-        toggleElements(SELECTORS.comments, currentSettings.hideComments);
-        toggleElements(SELECTORS.leftSidebar, currentSettings.hideSideBar);
-        toggleElements(SELECTORS.rightSidebar, currentSettings.hideRightSidebar);
-        toggleElements(SELECTORS.search, currentSettings.hideSearch);
-        toggleElements(SELECTORS.notifications, currentSettings.hideNotifications);
-
-        if (!currentSettings.hideComments) {
-            applyUpvoteSettings();
-        }
-
-        if (!currentSettings.hideRightSidebar) {
-            toggleElements(SELECTORS.recentPosts, currentSettings.hideRecentPosts);
-            toggleElements(SELECTORS.subredditInfo, currentSettings.hideSubredditInfo);
-            toggleElements(SELECTORS.popularCommunities, currentSettings.hidePopularCommunities);
-        }
-
-        if (!currentSettings.hideSearch) {
-            toggleElements(SELECTORS.trending, currentSettings.hideTrending);
-            toggleElements(SELECTORS.trendingLabel, currentSettings.hideTrending);
-
-            findElements(SELECTORS.trendingContainer).forEach(element => {
-                if (currentSettings.hideTrending) {
-                    element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+            elements.forEach(element => {
+                if (config.customHandler) {
+                    const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
+                    config.customHandler(element, shouldHide);
                 } else {
-                    element.classList.add('w-full', 'border-solid', 'border-b-sm', 'border-t-0', 'unhook-reddit-visible');
+                    const shouldHide = config.shouldHide ? config.shouldHide(currentSettings, pageContext) : false;
+
+                    if (shouldHide) {
+                        const targetEl = config.targetElement ? config.targetElement(element) : element;
+                        hideElement(targetEl);
+                    } else {
+                        if (config.showExtraElements) {
+                            config.showExtraElements(element).forEach(el => showElement(el));
+                        } else {
+                            showElement(element);
+                        }
+                    }
                 }
             });
-        }
-
-        if (!currentSettings.hideSideBar) {
-            toggleElements(SELECTORS.games, currentSettings.hideGames);
-            toggleElements(SELECTORS.popular, currentSettings.hidePopular);
-            toggleElements(SELECTORS.explore, currentSettings.hideExplore);
-            toggleElements(SELECTORS.recentSubreddits, currentSettings.hideRecentSubreddits);
-            toggleElements(SELECTORS.all, currentSettings.hideAll);
-
-            findElements(SELECTORS.customFeeds).forEach(element => {
-                const parent = element.parentElement.parentElement;
-                currentSettings.hideCustomFeeds ? hideElement(parent) : showElement(parent);
-            });
-
-            findElements(SELECTORS.communities).forEach(element => {
-                const parent = element.parentElement.parentElement;
-                currentSettings.hideCommunities ? hideElement(parent) : showElement(parent);
-            });
-        }
-    };
-
-    const applyUpvoteSettings = () => {
-        const actionRows = findElements(SELECTORS.commentActionRow);
-        actionRows.forEach(actionRow => {
-            if (actionRow.shadowRoot) {
-                const upvoteButtons = actionRow.shadowRoot.querySelectorAll(SELECTORS.upvotes);
-                upvoteButtons.forEach(button => {
-                    if (currentSettings.hideUpvotes) {
-                        hideElement(button);
-                    } else {
-                        showElement(button);
-                        const countElements = button.querySelectorAll(SELECTORS.upvoteCount);
-                        countElements.forEach(countElement => {
-                            if (currentSettings.hideUpvoteCount) {
-                                hideElement(countElement);
-                            } else {
-                                showElementImmediate(countElement);
-                            }
-                        });
-                    }
-                });
-            }
         });
     };
 
@@ -381,7 +419,23 @@ try {
     let isNavigating = false;
 
     const handleNavigationStart = (destinationUrl = null) => {
-        if (isNavigating || !currentSettings || Object.keys(currentSettings).length === 0) return;
+        if (!isNavigating) {
+            isNavigating = true;
+
+            if (currentSettings && Object.keys(currentSettings).length > 0) {
+                let isDestinationSubreddit;
+
+                if (destinationUrl) {
+                    try {
+                        const url = new URL(destinationUrl, window.location.origin);
+                        isDestinationSubreddit = url.pathname.startsWith('/r/');
+                    } catch (e) {
+                        isDestinationSubreddit = window.location.pathname.startsWith('/r');
+                    }
+                } else {
+                    isDestinationSubreddit = window.location.pathname.startsWith('/r');
+                }
+                const feedElements = findElements(SELECTORS.homeFeed);
 
         isNavigating = true;
         let isDestinationSubreddit;
@@ -648,7 +702,6 @@ try {
         setupSearchObserver();
         checkExistingSearchShadowRoots();
     }
-
 } catch (error) {
     console.error('Content script error:', error);
 }
