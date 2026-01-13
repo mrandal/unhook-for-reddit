@@ -5,10 +5,18 @@ try {
 
     const STORAGE_KEYS = [
         "hideHomeFeed",
+        "hideGallery",
         "hideSubredditFeed",
+        "hideCommunityHighlights",
         "hideSideBar",
+        "hideGames",
         "hideComments",
+        "hideUpvotes",
+        "hideUpvoteCount",
+        "hideRightSidebar",
         "hideRecentPosts",
+        "hideSubredditInfo",
+        "hidePopularCommunities",
         "hideSearch",
         "hideTrending",
         "hidePopular",
@@ -17,25 +25,36 @@ try {
         "hideRecentSubreddits",
         "hideCommunities",
         "hideAll",
+        "hideNotifications",
         "darkMode"
     ];
 
     const SELECTORS = {
         homeFeed: "shreddit-feed",
+        gallery: "shreddit-gallery-carousel",
         subredditFeed: "shreddit-feed",
+        communityHighlights: "community-highlight-carousel",
         comments: "shreddit-comment",
+        commentActionRow: "shreddit-comment-action-row",
+        upvotes: '[slot="vote-button"]',
+        upvoteCount: 'faceplate-number',
+        rightSidebar: "#right-sidebar-contents",
         recentPosts: "recent-posts",
+        subredditInfo: '#subreddit-right-rail__partial',
+        popularCommunities: '[aria-label="Popular Communities"]',
         search: "reddit-search-large",
         trending: "#reddit-trending-searches-partial-container",
         trendingLabel: "div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center",
         trendingContainer: "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
         leftSidebar: "#left-sidebar",
+        games: "games-section-badge-controller",
         popular: "#popular-posts",
         explore: "#explore-communities",
         customFeeds: "#multireddits_section",
         recentSubreddits: "reddit-recent-pages",
         communities: "#communities_section",
-        all: "#all-posts"
+        all: "#all-posts",
+        notifications: "#notifications-inbox-button"
     };
 
     const SHADOW_DOM_SELECTORS = {
@@ -146,11 +165,8 @@ try {
     ];
 
     let currentSettings = {};
-
     let originalDisplayValues = new Map();
-
-    // Hold time for elements containing shadow DOMs to prevent flash
-    const holdTime = 0.2; // seconds
+    const holdTime = 0.2;
 
     const REDIRECT_MAPPINGS = [
         {
@@ -164,6 +180,11 @@ try {
         {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideAll',
+        },
+        {
+            check: (path) => path.startsWith('/notifications'),
+            setting: 'hideNotifications',
+            message: 'Notifications page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/popular'),
@@ -185,7 +206,6 @@ try {
 
         if (activeRedirects.length > 0) {
             const settingsToCheck = activeRedirects.map(r => r.setting);
-
             browser.storage.sync.get(settingsToCheck)
                 .then((data) => {
                     for (const redirect of activeRedirects) {
@@ -195,9 +215,7 @@ try {
                         }
                     }
                 })
-                .catch((error) => {
-                    console.warn('Failed to check redirect settings:', error);
-                });
+                .catch((error) => console.warn('Failed to check redirect settings:', error));
         }
     };
 
@@ -208,18 +226,11 @@ try {
             const wasVisible = element.classList.contains('unhook-reddit-visible');
             element.classList.add('unhook-reddit-visible');
 
-            const computedStyle = window.getComputedStyle(element);
-            let originalDisplay = computedStyle.display;
+            let originalDisplay = window.getComputedStyle(element).display;
 
             if (originalDisplay === 'none') {
                 const tagName = element.tagName.toLowerCase();
-                if (['div', 'section', 'article', 'aside', 'nav'].includes(tagName)) {
-                    originalDisplay = 'block';
-                } else if (tagName === 'span') {
-                    originalDisplay = 'inline';
-                } else {
-                    originalDisplay = 'block';
-                }
+                originalDisplay = (tagName === 'span') ? 'inline' : 'block';
             }
 
             if (!wasVisible) {
@@ -247,33 +258,23 @@ try {
 
     const containsShadowDOM = (element) => {
         const tagName = element.tagName ? element.tagName.toLowerCase() : '';
-        const shadowDOMElements = [
-            'reddit-search-large',
-            'reddit-sidebar-nav',
-            'left-nav-top-section'
-        ];
-        return shadowDOMElements.includes(tagName) ||
-            (element.id && shadowDOMElements.some(tag => element.id.includes(tag.replace('-', '')))) ||
-            element.shadowRoot;
+        const shadowDOMElements = ['reddit-search-large', 'reddit-sidebar-nav', 'left-nav-top-section'];
+        return shadowDOMElements.includes(tagName) || element.shadowRoot;
     };
 
     const showElementImmediate = (element) => {
         storeOriginalDisplay(element);
 
         const originalDisplay = originalDisplayValues.get(element);
+        const displayValue = (originalDisplay && originalDisplay !== 'none') ? originalDisplay : 'block';
+
         element.classList.add('unhook-reddit-visible');
+        element.setAttribute('data-display', displayValue);
 
         element.style.removeProperty('display');
         element.style.removeProperty('visibility');
         element.style.removeProperty('opacity');
 
-        if (originalDisplay && originalDisplay !== 'none') {
-            element.setAttribute('data-display', originalDisplay);
-        } else {
-            element.setAttribute('data-display', 'block');
-        }
-
-        const displayValue = originalDisplay && originalDisplay !== 'none' ? originalDisplay : 'block';
         element.style.setProperty('display', displayValue, 'important');
         element.style.setProperty('visibility', 'visible', 'important');
         element.style.setProperty('opacity', '1', 'important');
@@ -299,7 +300,6 @@ try {
 
     const findElements = (selectorString) => {
         const selectors = selectorString.split(', ').map(s => s.trim());
-        let elements = [];
 
         const searchInRoot = (root, selector) => {
             try {
@@ -309,47 +309,34 @@ try {
             }
         };
 
-        const searchWithShadowDOM = (root, selector) => {
-            let found = [];
-
+        const searchWithShadowDOM = (selector) => {
             const shadowRootGetters = [
                 () => getShadowRoot(SHADOW_DOM_SELECTORS.search),
                 () => getShadowRoot(SHADOW_DOM_SELECTORS.sidebar),
-                () => getShadowRoot(SHADOW_DOM_SELECTORS.leftTop),
+                () => getShadowRoot(SHADOW_DOM_SELECTORS.leftTop)
             ];
 
             for (const getter of shadowRootGetters) {
                 try {
                     const shadowRoot = getter();
                     if (shadowRoot) {
-                        found = Array.from(shadowRoot.querySelectorAll(selector));
-                        if (found.length > 0) {
-                            return found;
-                        }
+                        const found = Array.from(shadowRoot.querySelectorAll(selector));
+                        if (found.length > 0) return found;
                     }
-                } catch (e) {
-                    // console.log(`Shadow root access failed for selector "${selector}":`, e.message);
-                }
+                } catch (e) { }
             }
-
-            return found;
+            return [];
         };
 
         for (const selector of selectors) {
             const normalFound = searchInRoot(document, selector);
-            if (normalFound.length > 0) {
-                elements = normalFound;
-                break;
-            }
+            if (normalFound.length > 0) return normalFound;
 
-            const shadowFound = searchWithShadowDOM(document, selector);
-            if (shadowFound.length > 0) {
-                elements = shadowFound;
-                break;
-            }
+            const shadowFound = searchWithShadowDOM(selector);
+            if (shadowFound.length > 0) return shadowFound;
         }
 
-        return elements;
+        return [];
     };
 
     const applyVisibilitySettings = () => {
@@ -361,8 +348,7 @@ try {
 
         if (!currentSettings || Object.keys(currentSettings).length === 0) {
             Object.values(SELECTORS).forEach(selectorString => {
-                const elements = findElements(selectorString);
-                elements.forEach(element => showElement(element));
+                findElements(selectorString).forEach(element => showElement(element));
             });
             return;
         }
@@ -399,42 +385,15 @@ try {
     const loadAndApplyImmediateSettings = () => {
         try {
             browser.storage.sync.get(STORAGE_KEYS).then((data) => {
-                currentSettings = {
-                    hideHomeFeed: data.hideHomeFeed === true,
-                    hideSubredditFeed: data.hideSubredditFeed === true,
-                    hideSideBar: data.hideSideBar === true,
-                    hideComments: data.hideComments === true,
-                    hideRecentPosts: data.hideRecentPosts === true,
-                    hideSearch: data.hideSearch === true,
-                    hideTrending: data.hideTrending === true,
-                    hidePopular: data.hidePopular === true,
-                    hideExplore: data.hideExplore === true,
-                    hideCustomFeeds: data.hideCustomFeeds === true,
-                    hideRecentSubreddits: data.hideRecentSubreddits === true,
-                    hideCommunities: data.hideCommunities === true,
-                    hideAll: data.hideAll === true,
-                    darkMode: data.darkMode === true
-                };
-
+                STORAGE_KEYS.forEach(key => {
+                    currentSettings[key] = data[key] === true;
+                });
                 applyVisibilitySettings();
             });
         } catch (error) {
-            currentSettings = {
-                hideHomeFeed: false,
-                hideSubredditFeed: false,
-                hideSideBar: false,
-                hideComments: false,
-                hideRecentPosts: false,
-                hideSearch: false,
-                hideTrending: false,
-                hidePopular: false,
-                hideExplore: false,
-                hideCustomFeeds: false,
-                hideRecentSubreddits: false,
-                hideCommunities: false,
-                hideAll: false,
-                darkMode: false
-            };
+            STORAGE_KEYS.forEach(key => {
+                currentSettings[key] = false;
+            });
             applyVisibilitySettings();
         }
     };
@@ -478,27 +437,35 @@ try {
                 }
                 const feedElements = findElements(SELECTORS.homeFeed);
 
-                if (!isDestinationSubreddit && currentSettings.hideHomeFeed) {
-                    feedElements.forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                        el.style.setProperty('visibility', 'hidden', 'important');
-                        el.style.setProperty('opacity', '0', 'important');
-                    });
-                } else if (isDestinationSubreddit && currentSettings.hideSubredditFeed) {
-                    feedElements.forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                        el.style.setProperty('visibility', 'hidden', 'important');
-                        el.style.setProperty('opacity', '0', 'important');
-                    });
-                } else {
-                    feedElements.forEach(el => {
-                        el.style.removeProperty('display');
-                        el.style.removeProperty('visibility');
-                        el.style.removeProperty('opacity');
-                    });
-                }
+        isNavigating = true;
+        let isDestinationSubreddit;
+
+        if (destinationUrl) {
+            try {
+                const url = new URL(destinationUrl, window.location.origin);
+                isDestinationSubreddit = url.pathname.startsWith('/r/');
+            } catch (e) {
+                isDestinationSubreddit = window.location.pathname.startsWith('/r');
             }
+        } else {
+            isDestinationSubreddit = window.location.pathname.startsWith('/r');
         }
+
+        const feedElements = findElements(SELECTORS.homeFeed);
+        const shouldHide = (!isDestinationSubreddit && currentSettings.hideHomeFeed) ||
+            (isDestinationSubreddit && currentSettings.hideSubredditFeed);
+
+        feedElements.forEach(el => {
+            if (shouldHide) {
+                el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
+                el.style.setProperty('opacity', '0', 'important');
+            } else {
+                el.style.removeProperty('display');
+                el.style.removeProperty('visibility');
+                el.style.removeProperty('opacity');
+            }
+        });
     };
 
     const handleNavigation = () => {
@@ -506,9 +473,7 @@ try {
         if (newUrl !== currentUrl) {
             currentUrl = newUrl;
             isNavigating = false;
-
             checkPageRedirects();
-
             setTimeout(() => {
                 applyVisibilitySettings();
             }, 50);
@@ -548,25 +513,27 @@ try {
 
     const observer = new MutationObserver((mutations) => {
         let shouldReapply = false;
+        let shouldReapplyUpvotes = false;
 
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    const selectors = Object.values(SELECTORS);
-                    selectors.forEach(selector => {
-                        if (node.matches && node.matches(selector) ||
-                            node.querySelector && node.querySelector(selector)) {
+                    Object.values(SELECTORS).forEach(selector => {
+                        if ((node.matches && node.matches(selector)) ||
+                            (node.querySelector && node.querySelector(selector))) {
                             shouldReapply = true;
                         }
                     });
 
-                    if (node.matches && (node.matches('#reddit-trending-searches-partial-container') ||
-                        node.querySelector && node.querySelector('#reddit-trending-searches-partial-container'))) {
-                        aggressivelyHideTrending();
+                    if ((node.matches && node.matches(SELECTORS.commentActionRow)) ||
+                        (node.querySelector && node.querySelector(SELECTORS.commentActionRow))) {
+                        shouldReapplyUpvotes = true;
                     }
 
-                    if (node.matches && (node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
-                        node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'))) {
+                    if ((node.matches && (node.matches('#reddit-trending-searches-partial-container') ||
+                        node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'))) ||
+                        (node.querySelector && (node.querySelector('#reddit-trending-searches-partial-container') ||
+                            node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')))) {
                         aggressivelyHideTrending();
                     }
                 }
@@ -575,6 +542,8 @@ try {
 
         if (shouldReapply) {
             applyVisibilitySettings();
+        } else if (shouldReapplyUpvotes && !currentSettings.hideComments) {
+            setTimeout(() => applyUpvoteSettings(), 100);
         }
     });
 
@@ -587,16 +556,9 @@ try {
     }
 
     const aggressivelyHideTrending = () => {
-        if (currentSettings.hideTrending === true && !currentSettings.hideSearch) {
-            const trendingElements = findElements(SELECTORS.trending);
-            trendingElements.forEach(element => {
-                hideElement(element);
-            });
-
-            const trendingLabelElements = findElements(SELECTORS.trendingLabel);
-            trendingLabelElements.forEach(element => {
-                hideElement(element);
-            });
+        if (currentSettings.hideTrending && !currentSettings.hideSearch) {
+            findElements(SELECTORS.trending).forEach(element => hideElement(element));
+            findElements(SELECTORS.trendingLabel).forEach(element => hideElement(element));
 
             const trendingContainerSelectors = [
                 "div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border",
@@ -604,16 +566,16 @@ try {
                 "div[class*='border-neutral-border']"
             ];
 
-            let trendingContainerElements = [];
             for (const selector of trendingContainerSelectors) {
-                trendingContainerElements = findElements(selector);
-                if (trendingContainerElements.length > 0) break;
+                const elements = findElements(selector);
+                if (elements.length > 0) {
+                    elements.forEach(element => {
+                        element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
+                        element.classList.add('unhook-reddit-visible');
+                    });
+                    break;
+                }
             }
-
-            trendingContainerElements.forEach(element => {
-                element.classList.remove('w-full', 'border-solid', 'border-b-sm', 'border-t-0');
-                element.classList.add('unhook-reddit-visible');
-            });
         }
     };
 
@@ -621,32 +583,25 @@ try {
         try {
             const searchObserver = new MutationObserver((mutations) => {
                 let trendingReappeared = false;
-
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.ELEMENT_NODE) {
-                            if (node.id === 'reddit-trending-searches-partial-container' ||
-                                node.querySelector?.('#reddit-trending-searches-partial-container')) {
-                                trendingReappeared = true;
-                            }
-
-                            if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
-                                node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
-                                trendingReappeared = true;
-                            }
-
-                            if (node.matches && node.matches('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border') ||
-                                node.querySelector && node.querySelector('div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border')) {
-                                trendingReappeared = true;
-                            }
+                            const trendingSelectors = [
+                                '#reddit-trending-searches-partial-container',
+                                'div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center',
+                                'div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border'
+                            ];
+                            trendingReappeared = trendingSelectors.some(selector =>
+                                node.id === selector.slice(1) ||
+                                (node.matches && node.matches(selector)) ||
+                                (node.querySelector && node.querySelector(selector))
+                            );
                         }
                     });
                 });
 
                 if (trendingReappeared) {
-                    setTimeout(() => {
-                        aggressivelyHideTrending();
-                    }, 50);
+                    setTimeout(() => aggressivelyHideTrending(), 50);
                 }
             });
 
@@ -656,11 +611,8 @@ try {
                 attributes: true,
                 attributeFilter: ['style', 'class', 'hidden']
             });
-
             return searchObserver;
-        } catch (error) {
-            // console.log('Failed to set up search shadow root observer for specific root:', error.message);
-        }
+        } catch (error) { }
         return null;
     };
 
@@ -668,22 +620,20 @@ try {
         try {
             const searchElement = document.querySelector('reddit-search-large');
             if (searchElement && searchElement.shadowRoot) {
-                const searchShadowRoot = searchElement.shadowRoot;
-
                 const searchObserver = new MutationObserver((mutations) => {
                     let trendingReappeared = false;
                     mutations.forEach((mutation) => {
                         mutation.addedNodes.forEach((node) => {
                             if (node.nodeType === Node.ELEMENT_NODE) {
-                                if (node.id === 'reddit-trending-searches-partial-container' ||
-                                    node.querySelector?.('#reddit-trending-searches-partial-container')) {
-                                    trendingReappeared = true;
-                                }
-
-                                if (node.matches && node.matches('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center') ||
-                                    node.querySelector && node.querySelector('div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center')) {
-                                    trendingReappeared = true;
-                                }
+                                const trendingSelectors = [
+                                    '#reddit-trending-searches-partial-container',
+                                    'div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center'
+                                ];
+                                trendingReappeared = trendingSelectors.some(selector =>
+                                    node.id === selector.slice(1) ||
+                                    (node.matches && node.matches(selector)) ||
+                                    (node.querySelector && node.querySelector(selector))
+                                );
                             }
                         });
                     });
@@ -693,41 +643,34 @@ try {
                     }
                 });
 
-                searchObserver.observe(searchShadowRoot, {
+                searchObserver.observe(searchElement.shadowRoot, {
                     childList: true,
                     subtree: true,
                     attributes: true,
                     attributeFilter: ['style', 'class', 'hidden']
                 });
-
                 return searchObserver;
             }
-        } catch (error) {
-            // console.log('Failed to set up search shadow root observer:', error.message);
-        }
+        } catch (error) { }
         return null;
     };
 
     const originalAttachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = function (options) {
         const shadowRoot = originalAttachShadow.call(this, options);
-        console.log('ATTACHED SHADOW ROOT:', shadowRoot);
         if (this.tagName === 'REDDIT-SEARCH-LARGE' ||
             this.tagName === 'REDDIT-SEARCH' ||
             this.classList.contains('search') ||
             this.getAttribute('data-testid')?.includes('search')) {
-
             setTimeout(() => {
                 setupSearchShadowObserverForRoot(shadowRoot);
             }, 100);
         }
-
         return shadowRoot;
     };
 
     const setupSearchObserver = () => {
         let searchObserver = setupSearchShadowObserver();
-
         if (!searchObserver) {
             const checkInterval = setInterval(() => {
                 searchObserver = setupSearchShadowObserver();
@@ -735,7 +678,6 @@ try {
                     clearInterval(checkInterval);
                 }
             }, 1000);
-
             setTimeout(() => {
                 clearInterval(checkInterval);
             }, 10000);
@@ -762,5 +704,4 @@ try {
     }
 } catch (error) {
     console.error('Content script error:', error);
-    console.error('Stack trace:', error.stack);
 }

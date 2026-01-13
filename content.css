@@ -1,12 +1,18 @@
-/* Hide elements by default to prevent flash of content */
 shreddit-feed:not(.unhook-reddit-visible),
+shreddit-gallery-carousel:not(.unhook-reddit-visible),
 shreddit-comment:not(.unhook-reddit-visible),
+community-highlight-carousel:not(.unhook-reddit-visible),
+[slot="vote-button"]:not(.unhook-reddit-visible),
 recent-posts:not(.unhook-reddit-visible),
 reddit-search-large:not(.unhook-reddit-visible),
 #reddit-trending-searches-partial-container:not(.unhook-reddit-visible),
 div.ml-md.mt-sm.mb-2xs.text-neutral-content-weak.flex.items-center.unhook-reddit-visible,
 div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border.unhook-reddit-visible,
 #left-sidebar:not(.unhook-reddit-visible),
+games-section-badge-controller:not(.unhook-reddit-visible),
+#right-sidebar-contents:not(.unhook-reddit-visible),
+#subreddit-right-rail__partial:not(.unhook-reddit-visible),
+[aria-label="Popular Communities"]:not(.unhook-reddit-visible),
 #popular-posts:not(.unhook-reddit-visible),
 #explore-communities:not(.unhook-reddit-visible),
 #multireddits_section:not(.unhook-reddit-visible),
@@ -14,6 +20,7 @@ div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neut
 reddit-recent-pages:not(.unhook-reddit-visible),
 #communities_section:not(.unhook-reddit-visible),
 #all-posts:not(.unhook-reddit-visible),
+#notifications-inbox-button:not(.unhook-reddit-visible),
 .unhook-reddit-visible:not(.unhook-reddit-visible) {
   display: none !important;
   visibility: hidden !important;
@@ -48,12 +55,4 @@ reddit-recent-pages:not(.unhook-reddit-visible),
   display: inline-block !important;
   visibility: visible !important;
   opacity: 1 !important;
-}
-
-/* Remove border from trending container when trending searches are hidden */
-div.w-full.border-solid.border-b-sm.border-t-0.border-r-0.border-l-0.border-neutral-border:not(.unhook-reddit-visible) {
-  border-bottom: none !important;
-  border-bottom-width: 0 !important;
-  border-bottom-style: none !important;
-  border-bottom-color: transparent !important;
 }

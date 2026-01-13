@@ -3,12 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Unhook for Reddit</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <h2>Unhook for Reddit</h2>
+    <div class="header">
+        <img src="assets/unhook-reddit-48.png" alt="Unhook for Reddit" class="header-logo">
+        <h2>Unhook for Reddit</h2>
+    </div>
 
     <div class="options-container">
         <div class="toggle-container dark-mode-toggle">
@@ -41,6 +45,24 @@
 
         <div class="toggle-container">
             <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideGallery"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Gallery</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideGallery" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <div class="lock-section">
                 <button type="button" class="lock-button" data-setting="hideSubredditFeed"
                     title="Click to permanently lock this setting">
                     <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
@@ -51,6 +73,24 @@
                     <span>Hide Subreddit Feed</span>
                     <div class="toggle-switch">
                         <input type="checkbox" id="hideSubredditFeed" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideCommunityHighlights"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Community Highlights</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideCommunityHighlights" class="toggle-input">
                         <span class="toggle-slider"></span>
                     </div>
                 </label>
@@ -114,6 +154,42 @@
 
         <div class="toggle-container indented sidebar-sub-option">
             <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideAll"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide r/All</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideAll" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideGames"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Games</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideGames" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented sidebar-sub-option">
+            <div class="lock-section">
                 <button type="button" class="lock-button" data-setting="hideCustomFeeds"
                     title="Click to permanently lock this setting">
                     <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
@@ -166,24 +242,6 @@
             </div>
         </div>
 
-        <div class="toggle-container indented sidebar-sub-option">
-            <div class="lock-section">
-                <button type="button" class="lock-button" data-setting="hideAll"
-                    title="Click to permanently lock this setting">
-                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
-                </button>
-            </div>
-            <div class="setting-section">
-                <label class="toggle-label">
-                    <span>Hide r/All</span>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="hideAll" class="toggle-input">
-                        <span class="toggle-slider"></span>
-                    </div>
-                </label>
-            </div>
-        </div>
-
         <div class="toggle-container">
             <div class="lock-section">
                 <button type="button" class="lock-button" data-setting="hideComments"
@@ -202,7 +260,63 @@
             </div>
         </div>
 
+        <!-- Indented comments sub-options -->
+        <div class="toggle-container indented comments-sub-option">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideUpvotes"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Comment Upvotes</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideUpvotes" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented upvotes-sub-option" style="margin-left: 2rem;">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideUpvoteCount"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Upvote Count Only</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideUpvoteCount" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
         <div class="toggle-container">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideRightSidebar"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Right Sidebar</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideRightSidebar" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Indented right sidebar sub-options -->
+        <div class="toggle-container indented right-sidebar-sub-option">
             <div class="lock-section">
                 <button type="button" class="lock-button" data-setting="hideRecentPosts"
                     title="Click to permanently lock this setting">
@@ -214,6 +328,42 @@
                     <span>Hide Recent Posts</span>
                     <div class="toggle-switch">
                         <input type="checkbox" id="hideRecentPosts" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented right-sidebar-sub-option">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideSubredditInfo"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Subreddit Info</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideSubredditInfo" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container indented right-sidebar-sub-option">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hidePopularCommunities"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Popular Communities</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hidePopularCommunities" class="toggle-input">
                         <span class="toggle-slider"></span>
                     </div>
                 </label>
@@ -251,6 +401,24 @@
                     <span>Hide Trending Searches</span>
                     <div class="toggle-switch">
                         <input type="checkbox" id="hideTrending" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <div class="lock-section">
+                <button type="button" class="lock-button" data-setting="hideNotifications"
+                    title="Click to permanently lock this setting">
+                    <img src="assets/lock-icon-white.png" alt="Lock" class="lock-icon">
+                </button>
+            </div>
+            <div class="setting-section">
+                <label class="toggle-label">
+                    <span>Hide Notifications</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="hideNotifications" class="toggle-input">
                         <span class="toggle-slider"></span>
                     </div>
                 </label>
