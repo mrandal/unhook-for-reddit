@@ -20,6 +20,7 @@ games-section-badge-controller:not(.unhook-reddit-visible),
 reddit-recent-pages:not(.unhook-reddit-visible),
 #communities_section:not(.unhook-reddit-visible),
 #all-posts:not(.unhook-reddit-visible),
+#notifications-inbox-button:not(.unhook-reddit-visible),
 .unhook-reddit-visible:not(.unhook-reddit-visible) {
   display: none !important;
   visibility: hidden !important;

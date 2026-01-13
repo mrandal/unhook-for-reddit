@@ -2,6 +2,18 @@ if (typeof browser === "undefined") {
     var browser = chrome;
 }
 
+// Detect Android platform and apply mobile UI
+(async () => {
+    try {
+        const platformInfo = await browser.runtime.getPlatformInfo();
+        if (platformInfo.os === 'android') {
+            document.body.classList.add('platform-android');
+        }
+    } catch (error) {
+        console.log('Platform detection not available:', error);
+    }
+})();
+
 const STORAGE_KEYS = [
     "hideHomeFeed",
     "hideGallery",
@@ -24,6 +36,7 @@ const STORAGE_KEYS = [
     "hideRecentSubreddits",
     "hideCommunities",
     "hideAll",
+    "hideNotifications",
     "darkMode"
 ];
 
@@ -48,7 +61,8 @@ const LOCK_STORAGE_KEYS = [
     "lock_hideCustomFeeds",
     "lock_hideRecentSubreddits",
     "lock_hideCommunities",
-    "lock_hideAll"
+    "lock_hideAll",
+    "lock_hideNotifications"
 ];
 
 
@@ -74,7 +88,8 @@ const getSettingDisplayName = (settingId) => {
         hideCustomFeeds: "Hide Custom Feeds",
         hideRecentSubreddits: "Hide Recent Subreddits",
         hideCommunities: "Hide Communities",
-        hideAll: "Hide r/All"
+        hideAll: "Hide r/All",
+        hideNotifications: "Hide Notifications"
     };
     return displayNames[settingId] || settingId;
 };
@@ -101,6 +116,7 @@ const hideCustomFeeds = document.getElementById('hideCustomFeeds');
 const hideRecentSubreddits = document.getElementById('hideRecentSubreddits');
 const hideCommunities = document.getElementById('hideCommunities');
 const hideAll = document.getElementById('hideAll');
+const hideNotifications = document.getElementById('hideNotifications');
 
 const sidebarSubOptions = document.querySelectorAll('.sidebar-sub-option');
 const searchSubOptions = document.querySelectorAll('.search-sub-option');
@@ -142,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideRecentSubreddits.checked = data.hideRecentSubreddits || false;
         hideCommunities.checked = data.hideCommunities || false;
         hideAll.checked = data.hideAll || false;
+        hideNotifications.checked = data.hideNotifications || false;
 
         applyDarkMode(darkMode.checked);
         updateSubOptions(sidebarSubOptions, hideSideBar.checked);
@@ -175,7 +192,8 @@ const saveSettings = () => {
         hideCustomFeeds: hideCustomFeeds.checked,
         hideRecentSubreddits: hideRecentSubreddits.checked,
         hideCommunities: hideCommunities.checked,
-        hideAll: hideAll.checked
+        hideAll: hideAll.checked,
+        hideNotifications: hideNotifications.checked
     };
     browser.storage.sync.set(settings).catch((error) => {
         console.error('Error saving settings:', error);
@@ -214,7 +232,7 @@ const handleDarkModeToggle = () => {
 
 darkMode.addEventListener('change', handleDarkModeToggle);
 
-[hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideGames, hideUpvoteCount, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll].forEach(setting => {
+[hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideGames, hideUpvoteCount, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideTrending, hidePopular, hideExplore, hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll, hideNotifications].forEach(setting => {
     setting.addEventListener('change', saveSettings);
 });
 
@@ -228,7 +246,7 @@ const addImmediateLockUpdates = () => {
     const settings = [
         hideHomeFeed, hideGallery, hideSubredditFeed, hideCommunityHighlights, hideSideBar, hideGames, hideComments, hideUpvotes, hideUpvoteCount,
         hideRightSidebar, hideRecentPosts, hideSubredditInfo, hidePopularCommunities, hideSearch, hideTrending, hidePopular, hideExplore,
-        hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll
+        hideCustomFeeds, hideRecentSubreddits, hideCommunities, hideAll, hideNotifications
     ];
 
     settings.forEach(setting => {

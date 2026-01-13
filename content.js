@@ -25,6 +25,7 @@ try {
         "hideRecentSubreddits",
         "hideCommunities",
         "hideAll",
+        "hideNotifications",
         "darkMode"
     ];
 
@@ -52,7 +53,8 @@ try {
         customFeeds: "#multireddits_section",
         recentSubreddits: "reddit-recent-pages",
         communities: "#communities_section",
-        all: "#all-posts"
+        all: "#all-posts",
+        notifications: "#notifications-inbox-button"
     };
 
     const SHADOW_DOM_SELECTORS = {
@@ -80,6 +82,11 @@ try {
             check: (path) => path.startsWith('/r/all'),
             setting: 'hideAll',
             message: 'All page detected, redirecting to home...'
+        },
+        {
+            check: (path) => path.startsWith('/notifications'),
+            setting: 'hideNotifications',
+            message: 'Notifications page detected, redirecting to home...'
         },
         {
             check: (path) => path.startsWith('/r/popular'),
@@ -269,6 +276,7 @@ try {
         toggleElements(SELECTORS.leftSidebar, currentSettings.hideSideBar);
         toggleElements(SELECTORS.rightSidebar, currentSettings.hideRightSidebar);
         toggleElements(SELECTORS.search, currentSettings.hideSearch);
+        toggleElements(SELECTORS.notifications, currentSettings.hideNotifications);
 
         if (!currentSettings.hideComments) {
             applyUpvoteSettings();
