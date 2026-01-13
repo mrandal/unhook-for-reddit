@@ -81,4 +81,4 @@ This extension:
 
 ## Support
 
-If you want to report issues or suggest features, please use our [feedback form](https://forms.gle/wB7BN8a7Be9aJTRq7).
+If you want to report issues or suggest features, please use GitHub issues or the [feedback form](https://forms.gle/wB7BN8a7Be9aJTRq7).
