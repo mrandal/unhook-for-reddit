@@ -170,7 +170,7 @@ try {
 
     const REDIRECT_MAPPINGS = [
         {
-            check: (path) => path.startsWith('/r/popular'),
+            check: (path) => path === '/r/popular' || path === '/r/popular/',
             setting: 'hidePopular',
         },
         {
@@ -178,7 +178,7 @@ try {
             setting: 'hideExplore',
         },
         {
-            check: (path) => path.startsWith('/r/all'),
+            check: (path) => path === '/r/all' || path === '/r/all/',
             setting: 'hideAll',
         },
         {
@@ -187,7 +187,7 @@ try {
             message: 'Notifications page detected, redirecting to home...'
         },
         {
-            check: (path) => path.startsWith('/r/popular'),
+            check: (path) => path === '/r/popular' || path === '/r/popular/',
             setting: 'hideSideBar',
         },
         {
@@ -195,7 +195,7 @@ try {
             setting: 'hideSideBar',
         },
         {
-            check: (path) => path.startsWith('/r/all'),
+            check: (path) => path === '/r/all' || path === '/r/all/',
             setting: 'hideSideBar',
         },
     ];
