@@ -69,7 +69,7 @@ try {
 
     const REDIRECT_MAPPINGS = [
         {
-            check: (path) => path.startsWith('/r/popular'),
+            check: (path) => path === '/r/popular' || path === '/r/popular/',
             setting: 'hidePopular',
             message: 'Popular page detected, redirecting to home...'
         },
@@ -79,7 +79,7 @@ try {
             message: 'Explore page detected, redirecting to home...'
         },
         {
-            check: (path) => path.startsWith('/r/all'),
+            check: (path) => path === '/r/all' || path === '/r/all/',
             setting: 'hideAll',
             message: 'All page detected, redirecting to home...'
         },
@@ -89,7 +89,7 @@ try {
             message: 'Notifications page detected, redirecting to home...'
         },
         {
-            check: (path) => path.startsWith('/r/popular'),
+            check: (path) => path === '/r/popular' || path === '/r/popular/',
             setting: 'hideSideBar',
             message: 'Popular page detected (sidebar hidden), redirecting to home...'
         },
@@ -99,7 +99,7 @@ try {
             message: 'Explore page detected (sidebar hidden), redirecting to home...'
         },
         {
-            check: (path) => path.startsWith('/r/all'),
+            check: (path) => path === '/r/all' || path === '/r/all/',
             setting: 'hideSideBar',
             message: 'All page detected (sidebar hidden), redirecting to home...'
         },
