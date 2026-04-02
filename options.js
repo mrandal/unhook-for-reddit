@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const saveSettings = () => {
+let saveSettings = () => {
     const settings = {
         darkMode: darkMode.checked,
         hideHomeFeed: hideHomeFeed.checked,
