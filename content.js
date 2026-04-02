@@ -161,6 +161,17 @@ try {
             setting: 'hideAll',
             condition: (pageContext, settings) => !settings.hideSideBar,
             shouldHide: (settings) => settings.hideAll === true
+        },
+        {
+            key: 'games',
+            setting: 'hideGames',
+            condition: (pageContext, settings) => !settings.hideSideBar,
+            shouldHide: (settings) => settings.hideGames === true
+        },
+        {
+            key: 'notifications',
+            setting: 'hideNotifications',
+            shouldHide: (settings) => settings.hideNotifications === true
         }
     ];
 
