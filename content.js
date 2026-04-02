@@ -435,37 +435,24 @@ try {
                 } else {
                     isDestinationSubreddit = window.location.pathname.startsWith('/r');
                 }
+
                 const feedElements = findElements(SELECTORS.homeFeed);
+                const shouldHide = (!isDestinationSubreddit && currentSettings.hideHomeFeed) ||
+                    (isDestinationSubreddit && currentSettings.hideSubredditFeed);
 
-        isNavigating = true;
-        let isDestinationSubreddit;
-
-        if (destinationUrl) {
-            try {
-                const url = new URL(destinationUrl, window.location.origin);
-                isDestinationSubreddit = url.pathname.startsWith('/r/');
-            } catch (e) {
-                isDestinationSubreddit = window.location.pathname.startsWith('/r');
+                feedElements.forEach(el => {
+                    if (shouldHide) {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.setProperty('visibility', 'hidden', 'important');
+                        el.style.setProperty('opacity', '0', 'important');
+                    } else {
+                        el.style.removeProperty('display');
+                        el.style.removeProperty('visibility');
+                        el.style.removeProperty('opacity');
+                    }
+                });
             }
-        } else {
-            isDestinationSubreddit = window.location.pathname.startsWith('/r');
         }
-
-        const feedElements = findElements(SELECTORS.homeFeed);
-        const shouldHide = (!isDestinationSubreddit && currentSettings.hideHomeFeed) ||
-            (isDestinationSubreddit && currentSettings.hideSubredditFeed);
-
-        feedElements.forEach(el => {
-            if (shouldHide) {
-                el.style.setProperty('display', 'none', 'important');
-                el.style.setProperty('visibility', 'hidden', 'important');
-                el.style.setProperty('opacity', '0', 'important');
-            } else {
-                el.style.removeProperty('display');
-                el.style.removeProperty('visibility');
-                el.style.removeProperty('opacity');
-            }
-        });
     };
 
     const handleNavigation = () => {
