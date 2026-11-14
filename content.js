@@ -51,7 +51,7 @@ try {
         popular: "#popular-posts",
         explore: "#explore-communities",
         customFeeds: "#multireddits_section",
-        recentSubreddits: "reddit-recent-pages",
+        recentSubreddits: "div#recent-communities-section",
         communities: "#communities_section",
         all: "#all-posts",
         notifications: "#notifications-inbox-button"
