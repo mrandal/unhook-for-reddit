@@ -177,7 +177,37 @@ try {
 			key: 'rightSidebar',
 			setting: 'hideRightSidebar',
 			shouldHide: (settings) => settings.hideRightSidebar === true
-		}
+		},
+		{
+			key: 'gallery',
+			setting: 'hideGallery',
+			shouldHide: (settings) => settings.hideGallery === true
+		},
+		{
+			key: 'communityHighlights',
+			setting: 'hideCommunityHighlights',
+			shouldHide: (settings) => settings.hideCommunityHighlights === true
+		},
+		{
+    		key: 'upvotes',
+    		setting: 'hideUpvotes',
+    		shouldHide: (settings) => settings.hideUpvotes === true
+		},
+		{
+    		key: 'upvoteCount',
+    		setting: 'hideUpvoteCount',
+    		shouldHide: (settings) => settings.hideUpvoteCount === true
+		},
+		{
+    		key: 'subredditInfo',
+    		setting: 'hideSubredditInfo',
+    		shouldHide: (settings) => settings.hideSubredditInfo === true
+		},
+		{
+    		key: 'popularCommunities',
+    		setting: 'hidePopularCommunities',
+    		shouldHide: (settings) => settings.hidePopularCommunities === true
+		},
     ];
 
     let currentSettings = {};
