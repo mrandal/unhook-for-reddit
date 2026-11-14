@@ -51,7 +51,7 @@ try {
         popular: "#popular-posts",
         explore: "#explore-communities",
         customFeeds: "#multireddits_section",
-        recentSubreddits: "reddit-recent-pages",
+        recentSubreddits: "div#recent-communities-section",
         communities: "#communities_section",
         all: "#all-posts",
         notifications: "#notifications-inbox-button"
@@ -172,7 +172,42 @@ try {
             key: 'notifications',
             setting: 'hideNotifications',
             shouldHide: (settings) => settings.hideNotifications === true
-        }
+        },
+		{
+			key: 'rightSidebar',
+			setting: 'hideRightSidebar',
+			shouldHide: (settings) => settings.hideRightSidebar === true
+		},
+		{
+			key: 'gallery',
+			setting: 'hideGallery',
+			shouldHide: (settings) => settings.hideGallery === true
+		},
+		{
+			key: 'communityHighlights',
+			setting: 'hideCommunityHighlights',
+			shouldHide: (settings) => settings.hideCommunityHighlights === true
+		},
+		{
+    		key: 'upvotes',
+    		setting: 'hideUpvotes',
+    		shouldHide: (settings) => settings.hideUpvotes === true
+		},
+		{
+    		key: 'upvoteCount',
+    		setting: 'hideUpvoteCount',
+    		shouldHide: (settings) => settings.hideUpvoteCount === true
+		},
+		{
+    		key: 'subredditInfo',
+    		setting: 'hideSubredditInfo',
+    		shouldHide: (settings) => settings.hideSubredditInfo === true
+		},
+		{
+    		key: 'popularCommunities',
+    		setting: 'hidePopularCommunities',
+    		shouldHide: (settings) => settings.hidePopularCommunities === true
+		},
     ];
 
     let currentSettings = {};
