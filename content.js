@@ -172,7 +172,12 @@ try {
             key: 'notifications',
             setting: 'hideNotifications',
             shouldHide: (settings) => settings.hideNotifications === true
-        }
+        },
+		{
+			key: 'rightSidebar',
+			setting: 'hideRightSidebar',
+			shouldHide: (settings) => settings.hideRightSidebar === true
+		}
     ];
 
     let currentSettings = {};
